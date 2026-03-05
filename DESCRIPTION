@@ -13,4 +13,6 @@ Imports:
     dbplyr,
     dplyr,
     rlang,
-    RSQLite
+    RSQLite,
+    rFVS
+Remotes: USDAForestService/ForestVegetationSimulator-Interface/rFVS
