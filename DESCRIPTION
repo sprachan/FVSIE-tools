@@ -14,5 +14,9 @@ Imports:
     dplyr,
     rlang,
     RSQLite,
-    rFVS
+    rFVS,
+    stringr
 Remotes: USDAForestService/ForestVegetationSimulator-Interface/rFVS
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
