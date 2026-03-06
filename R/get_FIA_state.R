@@ -1,15 +1,30 @@
-#' Get FVS-ready FIA data
+#' Get FVS-ready FIA data from a state-level database
+#'
+#' `get_FIA_state()` fetches FVS Stand and FVS Tree tables from a downloaded FIA
+#' database. Note that these tables are only available at the state-level, so
+#' this function only works with state-level databases.
 #'
 #' @param db_loc Location for the FIA database.
-#' @param fia_cond_subset A subset of an FIA COND table.
+#' @param fia_cond_subset Dataframe. A subset of an FIA COND table.
 #' @param verbose Boolean value. If TRUE, will print SQL queries to console.
 #'
 #' @returns List of 2. FVS_StandInit is the stand table that can be used for
+#' @examples
+#'
+#' db_loc <- system.file('extdata', 'dummy_fia.db', package = 'rFVStools')
+#' con <- DBI::dbConnect(RSQLite::SQLite(), db_loc)
+#' cond <- dplyr::tbl(con, 'COND') |>
+#'         dplyr::filter(STATECD == 30) |>
+#'         dplyr::collect()
+#' DBI::dbDisconnect(con)
+#' get_FIA_state(db_loc, cond)
 #'
 #' @export
-get_FIA <- function(db_loc, fia_cond_subset, verbose = FALSE){
+get_FIA_state <- function(db_loc, fia_cond_subset, verbose = FALSE){
 
   fia_db_conn <- DBI::dbConnect(RSQLite::SQLite(), db_loc)
+  stopifnot(c('FVS_STANDINIT_PLOT', 'FVS_TREEINIT_PLOT') %in% DBI::dbListTables(fia_db_conn),
+            is.data.frame(fia_cond_subset))
 
   # from Gemini: safer way to make sure database is disconnected
   on.exit(DBI::dbDisconnect(fia_db_conn))
@@ -18,11 +33,7 @@ get_FIA <- function(db_loc, fia_cond_subset, verbose = FALSE){
   #> clause to improve performance.
 
   pcn_remote <- dplyr::copy_to(dest = fia_db_conn,
-                               df = dplyr::select(fia_cond_subset,
-                                                  .data$PLT_CN,
-                                                  .data$COUNTYCD,
-                                                  .data$UNITCD,
-                                                  .data$PLOT),
+                               df = fia_cond_subset['PLT_CN'],
                                name = 'temp_pcn',
                                overwrite = TRUE,
                                temporary = TRUE)
@@ -31,7 +42,7 @@ get_FIA <- function(db_loc, fia_cond_subset, verbose = FALSE){
   # from Gemini: use inner_join with temporary remote table. It's faster than
   #> filtering by a large vector.
   stand_initQ <- dplyr::tbl(fia_db_conn, 'FVS_STANDINIT_PLOT')|>
-    dplyr::inner_join(pcn_remote, by = c('STAND_CN' = 'PLT_CN')) |> # replace filter()
+    dplyr::inner_join(pcn_remote, by = c('STAND_CN' = 'PLT_CN')) |>
     dplyr::select(.data$STAND_CN, .data$STAND_ID,
                   .data$VARIANT,
                   .data$STATE, .data$COUNTYCD, .data$UNITCD, .data$PLOT,
