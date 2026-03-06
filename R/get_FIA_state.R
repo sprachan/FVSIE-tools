@@ -11,7 +11,7 @@
 #' @returns List of 2. FVS_StandInit is the stand table that can be used for
 #' @examples
 #'
-#' db_loc <- system.file('extdata', 'dummy_fia.db', package = 'rFVStools')
+#' db_loc <- system.file('extdata', 'dummy_fia.db', package = 'rFVSIEtools')
 #' con <- DBI::dbConnect(RSQLite::SQLite(), db_loc)
 #' cond <- dplyr::tbl(con, 'COND') |>
 #'         dplyr::filter(STATECD == 30) |>

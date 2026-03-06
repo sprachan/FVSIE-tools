@@ -1,5 +1,5 @@
-Package: rFVStools
-Title: Helpers for Running the Forest Vegetation Simulator
+Package: rFVSIEtools
+Title: Helpers for Running the Forest Vegetation Simulator-Inland Empire Variant
 Version: 0.0.0.9000
 Authors@R: 
     person("Sejal", "Prachand", , "sp258446@umconnect.umt.edu", role = c("aut", "cre"))
