@@ -6,13 +6,13 @@
 \usage{
 write_FVS_KEY(
   stand,
-  years_out = 100,
-  calibrate = TRUE,
-  triple = FALSE,
-  add_regen = FALSE,
-  customSDImax = NULL,
-  randomseed = 2025,
-  STDIDENT = NULL,
+  years_out,
+  calibrate,
+  triple,
+  add_regen,
+  customSDImax,
+  randomseed,
+  STDIDENT,
   ...,
   keyfilename
 )
