@@ -7,8 +7,9 @@
 #' @param db_loc Location for the FIA database.
 #' @param fia_cond_subset Dataframe. A subset of an FIA COND table.
 #' @param verbose Boolean value. If TRUE, will print SQL queries to console.
+#' @param add_identifiers Boolean value. If TRUE, will add a PID (Plot IDentifier) column to the stand table and a TUID (Tree Unique IDentifier) column to the tree table. PID and TUID are unique, persistent identifiers. They uniquely identify each FIA plot and each tree in each plot. Unlike FIA-provided identifiers, these stay the same across all years.
 #'
-#' @returns List of 2. FVS_StandInit is the stand table that can be used for
+#' @returns List of 2. FVS_StandInit is a dataframe of the stand information. FVS_TreeInit is a dataframe of all tree measurements. A single stand from this list selected with STAND_CN and the associated tree list (matching STAND_CN) can be passed to `run_FVS()`.
 #' @examples
 #'
 #' db_loc <- system.file('extdata', 'dummy_fia.db', package = 'rFVSIEtools')
@@ -20,7 +21,8 @@
 #' get_FIA_state(db_loc, cond)
 #'
 #' @export
-get_FIA_state <- function(db_loc, fia_cond_subset, verbose = FALSE){
+get_FIA_state <- function(db_loc, fia_cond_subset, verbose = FALSE,
+                          add_identifiers = FALSE){
 
   fia_db_conn <- DBI::dbConnect(RSQLite::SQLite(), db_loc)
   stopifnot(c('FVS_STANDINIT_PLOT', 'FVS_TREEINIT_PLOT') %in% DBI::dbListTables(fia_db_conn),
@@ -104,5 +106,17 @@ get_FIA_state <- function(db_loc, fia_cond_subset, verbose = FALSE){
     return(NULL)
   }
 
+  if(add_identifiers){
+    stand_init$PID <- paste0(stand_init$STATE,
+                             stringr::str_pad(stand_init$COUNTYCD, 3, pad = '0'),
+                             stand_init$UNITCD,
+                             stand_init$PLOT)
+    fia_tree <- fia_tree |>
+      dplyr::left_join(stand_init[c('PID', 'STAND_CN')],
+                       by = dplyr::join_by('STAND_CN')) |>
+      dplyr::mutate(TUID = paste0(.data$PID, .data$PLOT_ID, .data$TREE_ID))
+  }
+
   return(list(FVS_StandInit = stand_init, FVS_TreeInit = fia_tree))
+
 }
