@@ -1,18 +1,27 @@
 #' Run FVS-IE.
 #'
-#' @param trees Tree list, e.g., from get_FIA_state().
+#' @description
+#' When used with no additional arguments, runs FVS with these default parameters:
+#' *  100 years (modify with `years_out`)
+#' * Self-calibration turned ON (use `calibrate = FALSE` to disable)
+#' * Tripling turned off (use `triple = TRUE` to turn on)
+#' * Regeneration turned off (use `add_regen = TRUE ` to turn on).
+#' See [write_FVS_files()] for details on additional arguments to control the simulation.
+#' Currently only supports reporting after the first cycle. Future development to expand this functionality.
+#'
+#' @param trees Tree list.
 #' @param standinfo Stand information for the single stand corresponding to `treelist`.
 #' @param outdir Directory to write keyword, tree, and .out files to.
 #' @param fvs_bin FVS software location.
-#' @param ... Additional arguments passed to write_FVS_files() to control simulation.
+#' @param ... Additional arguments passed to `write_FVS_files()` to control simulation. See [write_FVS_files()].
 #' @param verbose If TRUE, report the names of the summary table and the number of rows in each year.
 #'
-#' @returns A list of two. $treelist is the combined tree list from year 0 and the final simulation year; summary is the FVS summary table.
+#' @returns A list of two. `$treelist` is the combined tree list from year 0 and the final simulation year; `$summary` is the FVS summary table.
 #' @export
 
 run_FVS <- function(trees, standinfo, outdir, fvs_bin,
                     ..., verbose = FALSE){
-
+  stopifnot(is.character(fvs_bin), file.exists(file.path(fvs_bin, 'FVSie.dll')))
   rFVS::fvsLoad("FVSie", fvs_bin)
   f <- write_FVS_files(trees = trees, standinfo = standinfo,
                       outdir = outdir,

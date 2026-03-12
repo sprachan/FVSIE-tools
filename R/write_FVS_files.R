@@ -1,4 +1,8 @@
-#' Writes keyword and treelist functions to files for running FVS.
+#' Write keyword files and treelist files.
+#'
+#' This function, wrapped in [run_FVS()], writes and saves .key and .tre files
+#'   that FVS-IE uses to initialize and carry out a simulation.
+#'   Use outside of `run_FVS()` when diagnostics on these files are needed.
 #'
 #' @param treelist Tree list to be run through FVS, e.g., FVS_TreeInit output from get_FIA()
 #' @param standinfo Stand data to be run through FVS, e.g., FVS_StandInit output from get_FIA()
@@ -15,12 +19,12 @@
 #'
 #' @details
 #' Optional arguments:
-#' * `customSDImax`: Dataframe. customSDImax$SP is the species, customSDImax$MaxSDI is that species' SDI.
-#' * `TIMEINT`: Named list. TIMEINT$CYCLE_NUM is the cycle whose length is to be changed. 0 changes the length for all cycles. TIMEINT$CYCLE_LEN is the
+#' * `customSDImax`: Dataframe. `customSDImax$SP` is the species, c`ustomSDImax$MaxSDI` `is that species' SDI.
+#' * `TIMEINT`: Named list. `TIMEINT$CYCLE_NUM` is the cycle whose length is to be changed. 0 changes the length for all cycles. `TIMEINT$CYCLE_LEN` is the
 #' cycle length to change to.
 #' * `READCORD`, `READCORR`: Vectors of numeric values. Length must be 23 to match the number of species in the variant.
 #'
-#' @returns The filename created for .key and .TRE files, invisibly.
+#' @returns The filename created for .key and .tre files, invisibly.
 #' @export
 write_FVS_files <- function(treelist, standinfo,
                             years_out=100,
@@ -28,7 +32,7 @@ write_FVS_files <- function(treelist, standinfo,
                             triple=FALSE,
                             add_regen=FALSE,
                             customSDImax=NULL,
-                            randomseed=2025,
+                            randomseed=NULL,
                             STDIDENT = 'FVSProjection',
                             outdir,
                             file_prefix = NULL,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/write_FVS_files.R
 \name{write_FVS_files}
 \alias{write_FVS_files}
-\title{Writes keyword and treelist functions to files for running FVS.}
+\title{Write keyword files and treelist files.}
 \usage{
 write_FVS_files(
   treelist,
@@ -12,7 +12,7 @@ write_FVS_files(
   triple = FALSE,
   add_regen = FALSE,
   customSDImax = NULL,
-  randomseed = 2025,
+  randomseed = NULL,
   STDIDENT = "FVSProjection",
   outdir,
   file_prefix = NULL,
@@ -45,16 +45,18 @@ write_FVS_files(
 \item{...}{Additional optional arguments passed to write_FVS_KEY(). See details.}
 }
 \value{
-The filename created for .key and .TRE files, invisibly.
+The filename created for .key and .tre files, invisibly.
 }
 \description{
-Writes keyword and treelist functions to files for running FVS.
+This function, wrapped in \code{\link[=run_FVS]{run_FVS()}}, writes and saves .key and .tre files
+that FVS-IE uses to initialize and carry out a simulation.
+Use outside of \code{run_FVS()} when diagnostics on these files are needed.
 }
 \details{
 Optional arguments:
 \itemize{
-\item \code{customSDImax}: Dataframe. customSDImax$SP is the species, customSDImax$MaxSDI is that species' SDI.
-\item \code{TIMEINT}: Named list. TIMEINT$CYCLE_NUM is the cycle whose length is to be changed. 0 changes the length for all cycles. TIMEINT$CYCLE_LEN is the
+\item \code{customSDImax}: Dataframe. \code{customSDImax$SP} is the species, c\code{ustomSDImax$MaxSDI} `is that species' SDI.
+\item \code{TIMEINT}: Named list. \code{TIMEINT$CYCLE_NUM} is the cycle whose length is to be changed. 0 changes the length for all cycles. \code{TIMEINT$CYCLE_LEN} is the
 cycle length to change to.
 \item \code{READCORD}, \code{READCORR}: Vectors of numeric values. Length must be 23 to match the number of species in the variant.
 }
