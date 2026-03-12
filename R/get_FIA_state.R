@@ -27,17 +27,21 @@ get_FIA_state <- function(db_loc, fia_cond_subset, verbose = FALSE){
             is.data.frame(fia_cond_subset))
 
   # from Gemini: safer way to make sure database is disconnected
-  on.exit(DBI::dbDisconnect(fia_db_conn))
+  on.exit(DBI::dbDisconnect(fia_db_conn), add = TRUE)
 
   # from Gemini: use a temporary table in SQLite instead of massive 'IN'
   #> clause to improve performance.
 
   pcn_remote <- dplyr::copy_to(dest = fia_db_conn,
-                               df = fia_cond_subset['PLT_CN'],
+                               df = fia_cond_subset[c('PLT_CN', 'COUNTYCD', 'UNITCD')],
                                name = 'temp_pcn',
                                overwrite = TRUE,
                                temporary = TRUE)
-
+  if(!('COUNTYCD' %in% colnames(pcn_remote))){
+    cat(sort(colnames(pcn_remote)), '\n',
+        sort(colnames(dplyr::tbl(fia_db_conn, 'FVS_STANDINIT_PLOT'))))
+    stop()
+  }
   # construct and execute SQL query using tidyverse-style piping
   # from Gemini: use inner_join with temporary remote table. It's faster than
   #> filtering by a large vector.
