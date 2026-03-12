@@ -37,7 +37,8 @@ get_FIA_state <- function(db_loc, fia_cond_subset, verbose = FALSE){
                                name = 'temp_pcn',
                                overwrite = TRUE,
                                temporary = TRUE)
-  if(!('COUNTYCD' %in% colnames(pcn_remote))){
+  stopifnot(c('COUNTYCD', 'PLOT') %in% colnames(pcn_remote))
+  if(sum(c('COUNTYCD', 'PLOT') %in% colnames(pcn_remote)) != 2){
     cat(sort(colnames(pcn_remote)), '\n',
         sort(colnames(dplyr::tbl(fia_db_conn, 'FVS_STANDINIT_PLOT'))))
     stop()
