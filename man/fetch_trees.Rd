@@ -7,6 +7,5 @@
 fetch_trees()
 }
 \description{
-Get treelist from FVS run.
+Exported only because of a quirk in rFVS.
 }
-\keyword{internal}

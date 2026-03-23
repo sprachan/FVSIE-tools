@@ -36,7 +36,7 @@ run_FVS <- function(trees, standinfo, outdir, fvs_bin,
 
   rFVS::fvsSetCmdLine(paste0('--keywordfile=', f, '.key'))
 
-  fvs_output <- rFVS::fvsInteractRun(AfterEM1 = 'fetchTrees()',
+  fvs_output <- rFVS::fvsInteractRun(AfterEM1 = 'rFVSIEtools::fetch_trees()',
                                      SimEnd = rFVS::fvsGetSummary)
 
   if(verbose){
@@ -68,7 +68,9 @@ run_FVS <- function(trees, standinfo, outdir, fvs_bin,
 
 #' Get treelist from FVS run.
 #'
-#' @keywords internal
+#' Exported only because of a quirk in rFVS.
+#'
+#' @export
 
 fetch_trees <- function(){
   tree_list <- rFVS::fvsGetTreeAttrs(c("id",
