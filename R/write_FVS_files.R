@@ -37,6 +37,7 @@ write_FVS_files <- function(treelist, standinfo,
                             outdir,
                             file_prefix = NULL,
                             ...){
+  stopifnot('Output directory does not exist' = dir.exists(outdir))
   stand <- set_FVSie_defaults(standinfo)
 
   # generate file names
@@ -49,7 +50,7 @@ write_FVS_files <- function(treelist, standinfo,
   keyfilename <- paste0(filename, ".key")
   treefilename <- paste0(filename, ".tre")
 
-  write_FVS_TRE(treelist, standinfo, treefilename)
+  write_FVS_TRE(treelist, standinfo, treefilename = treefilename)
   write_FVS_KEY(stand = stand, years_out = years_out, calibrate = calibrate,
                 triple = triple, add_regen = add_regen, customSDImax = customSDImax,
                 randomseed = randomseed, STDIDENT = STDIDENT, ..., keyfilename = keyfilename)
@@ -203,7 +204,7 @@ write_FVS_KEY <- function(stand,
   }
 
   if(!is.null(opt_args$READCORD)){
-    stopifnot(length(opt_args$READCORD) == 23)
+    stopifnot('READCORD must have length 23' = length(opt_args$READCORD) == 23)
     t1 <- sprintf('READCORD  ')
     write(t1, file = keyfilename, append = TRUE)
     # 23 species --> 3 lines of 8 entries
@@ -212,7 +213,7 @@ write_FVS_KEY <- function(stand,
   }
 
   if(!is.null(opt_args$READCORR)){
-    stopifnot(length(opt_args$READCORD) == 23)
+    stopifnot('READCORR must have length 23' = length(opt_args$READCORR) == 23)
     t1 <- sprintf('READCORR  ')
     write(t1, file = keyfilename, append = TRUE)
     # 23 species --> 3 lines of 8 entries

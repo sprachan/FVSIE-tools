@@ -21,9 +21,16 @@
 
 run_FVS <- function(trees, standinfo, outdir, fvs_bin,
                     ..., verbose = FALSE){
-  stopifnot(is.character(fvs_bin), file.exists(file.path(fvs_bin, 'FVSie.dll')))
+  if(!is.character(fvs_bin)){
+    stop('Ensure that fvs_bin is a character string')
+  }
+
+  if(!file.exists(file.path(fvs_bin, 'FVSie.dll'))){
+    stop('FVSie.dll not found in ', fvs_bin, '. Check FVS installation.')
+  }
+
   rFVS::fvsLoad("FVSie", fvs_bin)
-  f <- write_FVS_files(trees = trees, standinfo = standinfo,
+  f <- write_FVS_files(treelist = trees, standinfo = standinfo,
                       outdir = outdir,
                       ...)
 
