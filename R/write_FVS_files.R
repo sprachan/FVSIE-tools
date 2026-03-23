@@ -134,9 +134,6 @@ write_FVS_KEY <- function(stand,
     write(t1, file = keyfilename, append = TRUE)
   }
 
-  # final year is a reporting year
-  t1 <- sprintf("CYCLEAT   %10i", stand$INV_YEAR + years_out)
-  write(t1, file = keyfilename, append = TRUE)
 
   ### bar tripling if necessary
   if (!triple){
@@ -165,7 +162,6 @@ write_FVS_KEY <- function(stand,
 
   ## calibration
 
-  write(t1, file = keyfilename, append = TRUE)
   if (!calibrate){
     write("NOCALIB", file = keyfilename, append = TRUE)
     write("NOHTDREG", file = keyfilename, append = TRUE)
