@@ -3,5 +3,6 @@
 export(fetch_trees)
 export(get_FIA_state)
 export(run_FVS)
+export(run_FVS_parallel)
 export(write_FVS_files)
 importFrom(rlang,.data)
