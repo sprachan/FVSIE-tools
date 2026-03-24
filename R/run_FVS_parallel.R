@@ -37,7 +37,6 @@ run_FVS_parallel <- function(stand_info, tree_list, n_batches = 1,
     ans <- menu(c('Yes', 'No'), title = 'Should execution continue?')
     if(ans == 2) stop('Execution stopped.')
   }
-
   if(any(length(n_batches) != 1, !is.numeric(n_batches),
          n_batches >= nrow(stand_info), n_batches <= 0, n_batches%%1 != 0)){
     stop('n_batches must be a positive integer less than the number of rows in the dataset.')
