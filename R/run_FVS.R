@@ -31,7 +31,7 @@ run_FVS <- function(tree_list, stand_info, out_dir, fvs_bin, ..., verbose = FALS
     stop('FVSie.dll not found in ', fvs_bin, '. Check FVS installation.')
   }
   if(!('fvs.TREE_ID' %in% colnames(tree_list))){
-    tree_list$fvs.TREE_ID <- 1:nrow(tree_list)
+    tree_list$fvs.TREE_ID <- seq_len(nrow(tree_list))
   }
 
   tr <- as.data.frame(tree_list[tree_list$STAND_CN == stand_info$STAND_CN,])
