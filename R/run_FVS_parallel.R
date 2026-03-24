@@ -32,41 +32,46 @@ run_FVS_parallel <- function(stand_info, tree_list, n_batches = 1,
                              simple_output = TRUE, out_dir, fvs_bin, ...){
   # argument checking
   if('sequential' %in% class(future::plan())){
-    warning("Detected future backend is 'sequential', so stands will not be run
-             in parallel. Did you forget to call future::plan()?")
+    warning("Detected future backend is 'sequential', so stands will not be run in parallel. Call future::plan() before running run_FVS_parallel()",
+            immediate. = TRUE)
+    ans <- menu(c('Yes', 'No'), title = 'Should execution continue?')
+    if(ans == 2) stop('Execution stopped.')
   }
+
   if(any(length(n_batches) != 1, !is.numeric(n_batches),
          n_batches >= nrow(stand_info), n_batches <= 0, n_batches%%1 != 0)){
     stop('n_batches must be a positive integer less than the number of rows in the dataset.')
   }
 
-  # run FVS in parallel
   if(n_batches == 1){
-    trls <- future.apply::future_lapply(seq_len(nrow(stand_info)),
-                                        \(x) run_FVS(stand_info = stand_info[x,],
-                                                     tree_list = tree_list,
-                                                     out_dir = out_dir,
-                                                     fvs_bin = fvs_bin, ...),
-                                        future.seed = TRUE)
+    batches <- rep(1, nrow(stand_info))
   }else{
-    trls_list <- vector('list', length = n_batches)
     batches <- cut(seq_len(nrow(stand_info)), breaks = n_batches, labels = FALSE)
-    for(i in unique(batches)){
-      trls_list[[i]] <- future.apply::future_lapply(which(batches == i),
-                                               \(x) run_FVS(stand_info = stand_info[x,],
-                                                            tree_list = tree_list,
-                                                            out_dir = out_dir,
-                                                            fvs_bin = fvs_bin,
-                                                              ...),
-                                               future.seed = TRUE)
-    }
-    trls <- unlist(trls_list, recursive = FALSE)
   }
+
+  trls_list <- vector('list', n_batches)
+
+  for(i in unique(batches)){
+    batch_index <- which(batches == i)
+    trls_list[[i]] <- future.apply::future_lapply(batch_index,
+                                                  .run_FVS_worker,stand_info = stand_info,
+                                                  tree_list = tree_list,
+                                                  out_dir = out_dir,
+                                                  fvs_bin = fvs_bin,
+                                                  ...,
+                                                  future.seed = TRUE)
+    message('Completed batch ', i, ' of ', n_batches)
+  }
+  trls <- unlist(trls_list, recursive = FALSE)
 
   # return results
   if(simple_output) simplify_outputs(trls) else trls
 }
 
+.run_FVS_worker <- function(index, stand_info, tree_list, out_dir, fvs_bin, ...){
+  run_FVS(stand_info = stand_info[index,], tree_list = tree_list, out_dir = out_dir,
+          fvs_bin = fvs_bin, ...)
+}
 
 #' Simplify nested lists of FVS outputs from running FVS in parallel.
 #'
