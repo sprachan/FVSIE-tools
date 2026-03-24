@@ -4,10 +4,10 @@
 \alias{set_FVSie_defaults}
 \title{Replace NA values in stand tables with FVS-IE defaults for writing a stand list.}
 \usage{
-set_FVSie_defaults(stand)
+set_FVSie_defaults(stand_info)
 }
 \arguments{
-\item{stand}{Stand to set defaults for.}
+\item{stand_info}{Stand to set defaults for.}
 }
 \value{
 A dataframe.

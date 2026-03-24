@@ -4,14 +4,14 @@
 \alias{write_FVS_TRE}
 \title{Writes tree list to .TRE file.}
 \usage{
-write_FVS_TRE(treelist, standinfo, treefilename)
+write_FVS_TRE(tree_list, stand_info, treefile_name)
 }
 \arguments{
-\item{treelist}{Tree list to write.}
+\item{tree_list}{Tree list to write.}
 
-\item{standinfo}{Stand table associated with tree list.}
+\item{stand_info}{Stand table associated with tree list.}
 
-\item{treefilename}{Destination for .TRE file.}
+\item{treefile_name}{Destination for .TRE file.}
 }
 \value{
 The tree file name, invisibly.

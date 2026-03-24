@@ -5,24 +5,26 @@
 \title{Write keyword files and treelist files.}
 \usage{
 write_FVS_files(
-  treelist,
-  standinfo,
+  tree_list,
+  stand_info,
   years_out = 100,
   calibrate = TRUE,
   triple = FALSE,
   add_regen = FALSE,
-  customSDImax = NULL,
-  randomseed = NULL,
+  custom_SDI_max = NULL,
+  random_seed = NULL,
   STDIDENT = "FVSProjection",
-  outdir,
+  out_dir,
   file_prefix = NULL,
   ...
 )
 }
 \arguments{
-\item{treelist}{Tree list to be run through FVS, e.g., FVS_TreeInit output from get_FIA()}
+\item{tree_list}{Tree list to be run through FVS, e.g., FVS_TreeInit output
+from get_FIA()}
 
-\item{standinfo}{Stand data to be run through FVS, e.g., FVS_StandInit output from get_FIA()}
+\item{stand_info}{Stand data to be run through FVS, e.g., FVS_StandInit
+output from get_FIA()}
 
 \item{years_out}{How many years ahead should we project?}
 
@@ -32,32 +34,36 @@ write_FVS_files(
 
 \item{add_regen}{Logical. Should regeneration be modeled? Default FALSE.}
 
-\item{customSDImax}{Optional. Maximum stand density index.}
+\item{custom_SDI_max}{Optional. Maximum stand density index.}
 
-\item{randomseed}{For replicability. Default 2025. To turn off, set to NULL.}
+\item{random_seed}{For replicability. Default 2025. To turn off, set to NULL.}
 
 \item{STDIDENT}{Optional. Stand Identity keyword to pass to FVS.}
 
-\item{outdir}{Directory to write files to.}
+\item{out_dir}{Directory to write files to.}
 
-\item{file_prefix}{Optional. If provided, KEY and TRE files with temp names will have this prefix.}
+\item{file_prefix}{Optional. If provided, KEY and TRE files with temp names
+will have this prefix.}
 
-\item{...}{Additional optional arguments passed to write_FVS_KEY(). See details.}
+\item{...}{Additional optional arguments passed to write_FVS_KEY(). See
+details.}
 }
 \value{
 The filename created for .key and .tre files, invisibly.
 }
 \description{
 This function, wrapped in \code{\link[=run_FVS]{run_FVS()}}, writes and saves .key and .tre files
-that FVS-IE uses to initialize and carry out a simulation.
-Use outside of \code{run_FVS()} when diagnostics on these files are needed.
+that FVS-IE uses to initialize and carry out a simulation. Use outside of
+\code{run_FVS()} when diagnostics on these files are needed.
 }
 \details{
 Optional arguments:
 \itemize{
-\item \code{customSDImax}: Dataframe. \code{customSDImax$SP} is the species, c\code{ustomSDImax$MaxSDI} `is that species' SDI.
-\item \code{TIMEINT}: Named list. \code{TIMEINT$CYCLE_NUM} is the cycle whose length is to be changed. 0 changes the length for all cycles. \code{TIMEINT$CYCLE_LEN} is the
+\item \code{custom_SDI_max}: Dataframe. \code{custom_SDI_max$SP} is the species, \verb{ }Custom_SDI_max$MaxSDI` is that species' SDI.
+\item \code{TIMEINT}: Named list. \code{TIMEINT$CYCLE_NUM} is the cycle whose length is to
+be changed. 0 changes the length for all cycles. \code{TIMEINT$CYCLE_LEN} is the
 cycle length to change to.
-\item \code{READCORD}, \code{READCORR}: Vectors of numeric values. Length must be 23 to match the number of species in the variant.
+\item \code{READCORD}, \code{READCORR}: Vectors of numeric values. Length must be 23 to
+match the number of species in the variant.
 }
 }

@@ -10,11 +10,11 @@ write_FVS_KEY(
   calibrate,
   triple,
   add_regen,
-  customSDImax,
-  randomseed,
+  custom_SDI_max,
+  random_seed,
   STDIDENT,
   ...,
-  keyfilename
+  keyfile_name
 )
 }
 \arguments{
@@ -28,15 +28,15 @@ write_FVS_KEY(
 
 \item{add_regen}{Logical. Should regeneration be modeled? Default FALSE.}
 
-\item{customSDImax}{Optional. Maximum stand density index. See details.}
+\item{custom_SDI_max}{Optional. Maximum stand density index. See details.}
 
-\item{randomseed}{For replicability. Default 2025. To turn off, set to NULL.}
+\item{random_seed}{For replicability. Default 2025. To turn off, set to NULL.}
 
 \item{STDIDENT}{Optional. Stand Identity keyword to pass to FVS.}
 
 \item{...}{Optional arguments. See details.}
 
-\item{keyfilename}{.key file to write to.}
+\item{keyfile_name}{.key file to write to.}
 }
 \value{
 Keyword filename, invisibly.
@@ -48,10 +48,13 @@ This can then be inspected and passed to run_FVS().
 \details{
 Optional arguments:
 \itemize{
-\item \code{customSDImax}: Dataframe. customSDImax$SP is the species, customSDImax$MaxSDI is that species' SDI.
-\item \code{TIMEINT}: Named list. TIMEINT$CYCLE_NUM is the cycle whose length is to be changed. 0 changes the length for all cycles. TIMEINT$CYCLE_LEN is the
+\item \code{custom_SDI_max}: Dataframe. custom_SDI_max$SP is the species,
+\code{custom_SDI_max$MaxSDI} is that species' SDI.
+\item \code{TIMEINT}: Named list. TIMEINT$CYCLE_NUM is the cycle whose length is to
+be changed. 0 changes the length for all cycles. TIMEINT$CYCLE_LEN is the
 cycle length to change to.
-\item \code{READCORD}, \code{READCORR}: Vectors of numeric values. Length must be 23 to match the number of species in the variant.
+\item \code{READCORD}, \code{READCORR}: Vectors of numeric values. Length must be 23 to
+match the number of species in the variant.
 }
 }
 \keyword{internal}

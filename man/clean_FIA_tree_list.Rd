@@ -4,15 +4,18 @@
 \alias{clean_FIA_tree_list}
 \title{Clean an FIA tree list to prepare for writing a .TRE file}
 \usage{
-clean_FIA_tree_list(treelist, standinfo)
+clean_FIA_tree_list(tree_list, stand_info)
 }
 \arguments{
-\item{treelist}{Tree list, from FIA_TREEINIT_PLOT table (FVS_TreeInit from get_FIA())}
+\item{tree_list}{Tree list, from FIA_TREEINIT_PLOT table
+(FVS_TreeInit from get_FIA())}
 
-\item{standinfo}{Stand information associated with the tree list (FVS_StandInit from get_FIA())}
+\item{stand_info}{Stand information associated with the tree list
+(FVS_StandInit from get_FIA())}
 }
 \value{
-A dataframe containing all tree information necessary to be input into FVS.
+A dataframe containing all tree information necessary to be input
+into FVS.
 }
 \description{
 Clean an FIA tree list to prepare for writing a .TRE file

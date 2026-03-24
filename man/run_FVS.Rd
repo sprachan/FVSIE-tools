@@ -4,32 +4,38 @@
 \alias{run_FVS}
 \title{Run FVS-IE.}
 \usage{
-run_FVS(trees, standinfo, outdir, fvs_bin, ..., verbose = FALSE)
+run_FVS(tree_list, stand_info, out_dir, fvs_bin, ..., verbose = FALSE)
 }
 \arguments{
-\item{trees}{Tree list.}
+\item{tree_list}{Tree list.}
 
-\item{standinfo}{Stand information for the single stand corresponding to \code{treelist}.}
+\item{stand_info}{Stand information for the single stand corresponding to
+\code{tree_list}.}
 
-\item{outdir}{Directory to write keyword, tree, and .out files to.}
+\item{out_dir}{Directory to write keyword, tree, and .out files to.}
 
 \item{fvs_bin}{FVS software location.}
 
-\item{...}{Additional arguments passed to \code{write_FVS_files()} to control simulation. See \code{\link[=write_FVS_files]{write_FVS_files()}}.}
+\item{...}{Additional arguments passed to \code{write_FVS_files()} to control
+simulation. See \code{\link[=write_FVS_files]{write_FVS_files()}}.}
 
-\item{verbose}{If TRUE, report the names of the summary table and the number of rows in each year.}
+\item{verbose}{If TRUE, report the names of the summary table and the number
+of rows in each year.}
 }
 \value{
-A list of two. \verb{$treelist} is the combined tree list from year 0 and the final simulation year; \verb{$summary} is the FVS summary table.
+A list of two. \verb{$tree_list} is the combined tree list from year 0 and
+the final simulation year; \verb{$summary} is the FVS summary table.
 }
 \description{
-When used with no additional arguments, runs FVS with these default parameters:
+When used with no additional arguments, runs FVS with these
+default parameters:
 \itemize{
 \item 100 years (modify with \code{years_out})
 \item Self-calibration turned ON (use \code{calibrate = FALSE} to disable)
 \item Tripling turned off (use \code{triple = TRUE} to turn on)
 \item Regeneration turned off (use \code{add_regen = TRUE } to turn on).
-See \code{\link[=write_FVS_files]{write_FVS_files()}} for details on additional arguments to control the simulation.
-Currently only supports reporting after the first cycle. Future development to expand this functionality.
+See \code{\link[=write_FVS_files]{write_FVS_files()}} for details on additional arguments to control the
+simulation. Currently only supports reporting after the first cycle. Future
+development to expand this functionality.
 }
 }
