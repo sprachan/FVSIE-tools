@@ -30,11 +30,11 @@ run_FVS <- function(tree_list, stand_info, out_dir, fvs_bin, ..., verbose = FALS
   if(!file.exists(file.path(fvs_bin, 'FVSie.dll'))){
     stop('FVSie.dll not found in ', fvs_bin, '. Check FVS installation.')
   }
-  if(!('fvs.TREE_ID' %in% colnames(tree_list))){
-    tree_list$fvs.TREE_ID <- seq_len(nrow(tree_list))
-  }
 
   tr <- as.data.frame(tree_list[tree_list$STAND_CN == stand_info$STAND_CN,])
+  if(!('fvs.TREE_ID' %in% colnames(tr))){
+    tr$fvs.TREE_ID <- seq_len(nrow(tr))
+  }
   if(sum(tr$HISTORY %in% 6:9) == nrow(tr)|nrow(tr) == 0){
     message('Skipping stand ', stand_info$STAND_CN, sep = '')
     return(list(tree_list = NULL, summary = NULL))
