@@ -26,6 +26,7 @@
 #' @export
 
 run_FVS <- function(tree_list, stand_info, out_dir, fvs_bin, ..., verbose = FALSE){
+  opt_args <- list(...)
   # argument checking
   stopifnot('Ensure that fvs_bin is a character string' = is.character(fvs_bin))
   if(!file.exists(file.path(fvs_bin, 'FVSie.dll'))){
@@ -56,12 +57,20 @@ run_FVS <- function(tree_list, stand_info, out_dir, fvs_bin, ..., verbose = FALS
                             dplyr::select(tr, .data$fvs.TREE_ID, .data$TUID,
                                           .data$PID),
                             by = c('id' = 'fvs.TREE_ID'))
-
-    # end of projection cycle tree list
-    tl1 <- dplyr::left_join(fvs_output[[2]]$AfterEM1,
-                            dplyr::select(tr, .data$fvs.TREE_ID, .data$TUID,
-                                          .data$PID),
-                            by = c('id' = 'fvs.TREE_ID'))
+    if(is.null(opt_args$CYCLEAT)||(opt_args$CYCLEAT-stand_info$INV_YEAR) <= 10){
+      tl1 <- dplyr::left_join(fvs_output[[2]]$AfterEM1,
+                              dplyr::select(tr, .data$fvs.TREE_ID, .data$TUID,
+                                            .data$PID),
+                              by = c('id' = 'fvs.TREE_ID'))
+    }else{
+      # if CYCLEAT is provided, we need
+      #> to figure out which list element to get
+      elem <- floor((opt_args$CYCLEAT-stand_info$INV_YEAR)/10)+2
+      tl1 <- dplyr::left_join(fvs_output[[elem]]$AfterEM1,
+                              dplyr::select(tr, .data$fvs.TREE_ID, .data$TUID,
+                                            .data$PID),
+                              by = c('id' = 'fvs.TREE_ID'))
+    }
 
     if(verbose) cat('Year 0 nrow: ', nrow(tl0), '\n Year N nrow: ', nrow(tl1))
 

@@ -225,7 +225,9 @@ write_FVS_KEY <- function(stand,
   write('', file = keyfile_name, append = TRUE)
 
   # number of cycles
-  cycles <- ceiling(proj_len / cycle_length)
+  cycles <- ifelse(is.null(opt_args$CYCLEAT),
+                   ceiling(proj_len/cycle_length),
+                   ceiling(max(opt_args$CYCLEAT-stand$INV_YEAR, proj_len)/cycle_length))
 
   t1 <- sprintf("NUMCYCLE  %10i", cycles)
   write(t1, file = keyfile_name, append = TRUE)
