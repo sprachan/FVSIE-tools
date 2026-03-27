@@ -2,10 +2,11 @@
 #'
 #' @description When used with no additional arguments, runs FVS with these
 #' default parameters:
-#' *  100 years (modify with `years_out`)
+#' *  100 years (modify with `proj_len`)
 #' * Self-calibration turned ON (use `calibrate = FALSE` to disable)
 #' * Tripling turned off (use `triple = TRUE` to turn on)
 #' * Regeneration turned off (use `add_regen = TRUE ` to turn on).
+#'
 #' See [write_FVS_files()] for details on additional arguments to control the
 #' simulation. Currently only supports reporting after the first cycle. Future
 #' development to expand this functionality.

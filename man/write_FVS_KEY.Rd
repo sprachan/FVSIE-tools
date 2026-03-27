@@ -6,7 +6,7 @@
 \usage{
 write_FVS_KEY(
   stand,
-  years_out,
+  proj_len,
   calibrate,
   triple,
   add_regen,
@@ -20,7 +20,7 @@ write_FVS_KEY(
 \arguments{
 \item{stand}{Dataframe. Stand data (for a single stand) for running FVS.}
 
-\item{years_out}{How many years out should we project? Default 100.}
+\item{proj_len}{How long, in years, should the projection be? Default 100.}
 
 \item{calibrate}{Logical. Should self-calibration be used? Default TRUE.}
 
@@ -55,6 +55,7 @@ be changed. 0 changes the length for all cycles. TIMEINT$CYCLE_LEN is the
 cycle length to change to.
 \item \code{READCORD}, \code{READCORR}: Vectors of numeric values. Length must be 23 to
 match the number of species in the variant.
+\item \code{CYCLEAT}: Additional reporting year.
 }
 }
 \keyword{internal}

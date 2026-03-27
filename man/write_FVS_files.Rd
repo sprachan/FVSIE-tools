@@ -7,7 +7,7 @@
 write_FVS_files(
   tree_list,
   stand_info,
-  years_out = 100,
+  proj_len = 100,
   calibrate = TRUE,
   triple = FALSE,
   add_regen = FALSE,
@@ -26,7 +26,7 @@ from get_FIA()}
 \item{stand_info}{Stand data to be run through FVS, e.g., FVS_StandInit
 output from get_FIA()}
 
-\item{years_out}{How many years ahead should we project?}
+\item{proj_len}{How many years ahead should we project?}
 
 \item{calibrate}{Logical. Should self-calibration be used? Default TRUE.}
 
@@ -45,7 +45,7 @@ output from get_FIA()}
 \item{file_prefix}{Optional. If provided, KEY and TRE files with temp names
 will have this prefix.}
 
-\item{...}{Additional optional arguments passed to write_FVS_KEY(). See
+\item{...}{Additional optional arguments passed to \code{\link[=write_FVS_KEY]{write_FVS_KEY()}}. See
 details.}
 }
 \value{
@@ -65,5 +65,6 @@ be changed. 0 changes the length for all cycles. \code{TIMEINT$CYCLE_LEN} is the
 cycle length to change to.
 \item \code{READCORD}, \code{READCORR}: Vectors of numeric values. Length must be 23 to
 match the number of species in the variant.
+\item \code{CYCLEAT}: Additional reporting year.
 }
 }

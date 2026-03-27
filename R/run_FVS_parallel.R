@@ -3,8 +3,8 @@
 #' This function uses the `future.apply` and `future` packages to support
 #' parallel processing. Consult `future` package documentation for more details.
 #'
-#' @param stand_info A dataframe where each row is a stand. Must contain STAND_CN
-#'   column.
+#' @param stand_info A dataframe where each row is a stand. Must contain
+#'   STAND_CN column.
 #' @param tree_list A dataframe where each row is a tree record. Must contain
 #'   STAND_CN column. If the trees in this dataframe are not associated with a
 #'   stand in `stand_info`, or if no trees are alive, the stand will be skipped.
@@ -15,6 +15,9 @@
 #' @param simple_output Optional, default TRUE. See Values.
 #' @param out_dir Directory to put .key, .tre, and .out files.
 #' @param fvs_bin Location of FVS software.
+#' @param year_col Optional character string. If additional years to report
+#'   varies by stand, this argument specifies the column in the stand
+#'   information dataframe that contains those additional reporting years.
 #' @param ... Additional parameters to pass on to control simulation. See
 #'   [write_FVS_files()] for details.
 #'
@@ -23,13 +26,15 @@
 #'   [run_FVS()], with all stands and trees bound together into a single
 #'   dataframe.
 #'
-#'   If `simple_output` is `FALSE`, returns a list of nested lists. Each
-#'   nested list contains both `treelist` and `summary` for a single stand from
+#'   If `simple_output` is `FALSE`, returns a list of nested lists. Each nested
+#'   list contains both `treelist` and `summary` for a single stand from
 #'   [run_FVS()].
 #' @export
 #'
 run_FVS_parallel <- function(stand_info, tree_list, n_batches = 1,
-                             simple_output = TRUE, out_dir, fvs_bin, ...){
+                             simple_output = TRUE, out_dir, fvs_bin,
+                             year_col = NULL, ...){
+  opt_args <- list(...)
   # argument checking
   if('sequential' %in% class(future::plan())){
     warning("Detected future backend is 'sequential', so stands will not be run in parallel. Call future::plan() before running run_FVS_parallel()",
@@ -52,13 +57,28 @@ run_FVS_parallel <- function(stand_info, tree_list, n_batches = 1,
 
   for(i in unique(batches)){
     batch_index <- which(batches == i)
-    trls_list[[i]] <- future.apply::future_lapply(batch_index,
-                                                  .run_FVS_worker,stand_info = stand_info,
-                                                  tree_list = tree_list,
-                                                  out_dir = out_dir,
-                                                  fvs_bin = fvs_bin,
-                                                  ...,
-                                                  future.seed = TRUE)
+    if(is.null(year_col)){
+      trls_list[[i]] <- future.apply::future_lapply(batch_index,
+                                                    .run_FVS_worker,
+                                                    stand_info = stand_info,
+                                                    tree_list = tree_list,
+                                                    out_dir = out_dir,
+                                                    fvs_bin = fvs_bin,
+                                                    ...,
+                                                    future.seed = TRUE)
+    }else{
+      trls_list[[i]] <- future.apply::future_lapply(batch_index,
+                                                    .run_FVS_worker_cycleat,
+                                                    stand_info = stand_info,
+                                                    tree_list = tree_list,
+                                                    out_dir = out_dir,
+                                                    fvs_bin = fvs_bin,
+                                                    year_col = year_col,
+                                                    ...,
+                                                    future.seed = TRUE)
+    }
+
+
     message('Completed batch ', i, ' of ', n_batches)
   }
   trls <- unlist(trls_list, recursive = FALSE)
@@ -70,6 +90,13 @@ run_FVS_parallel <- function(stand_info, tree_list, n_batches = 1,
 .run_FVS_worker <- function(index, stand_info, tree_list, out_dir, fvs_bin, ...){
   run_FVS(stand_info = stand_info[index,], tree_list = tree_list, out_dir = out_dir,
           fvs_bin = fvs_bin, ...)
+}
+
+.run_FVS_worker_cycleat <- function(index, stand_info, tree_list, out_dir,
+                                    year_col, fvs_bin, ...){
+  run_FVS(stand_info = stand_info[index,], tree_list = tree_list, out_dir = out_dir,
+          fvs_bin = fvs_bin,
+          CYCLEAT = unlist(stand_info[index,][year_col]), ...)
 }
 
 #' Simplify nested lists of FVS outputs from running FVS in parallel.

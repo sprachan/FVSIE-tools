@@ -8,7 +8,7 @@
 #'   from get_FIA()
 #' @param stand_info Stand data to be run through FVS, e.g., FVS_StandInit
 #'   output from get_FIA()
-#' @param years_out How many years ahead should we project?
+#' @param proj_len How many years ahead should we project?
 #' @param calibrate Logical. Should self-calibration be used? Default TRUE.
 #' @param triple Logical. Should tripling be turned on? Default FALSE.
 #' @param add_regen Logical. Should regeneration be modeled? Default FALSE.
@@ -18,7 +18,7 @@
 #' @param file_prefix Optional. If provided, KEY and TRE files with temp names
 #'   will have this prefix.
 #' @param STDIDENT Optional. Stand Identity keyword to pass to FVS.
-#' @param ... Additional optional arguments passed to write_FVS_KEY(). See
+#' @param ... Additional optional arguments passed to [write_FVS_KEY()]. See
 #'   details.
 #'
 #' @details Optional arguments:
@@ -29,10 +29,11 @@
 #'   cycle length to change to.
 #' * `READCORD`, `READCORR`: Vectors of numeric values. Length must be 23 to
 #'   match the number of species in the variant.
+#' * `CYCLEAT`: Additional reporting year.
 #'
 #' @returns The filename created for .key and .tre files, invisibly.
 #' @export
-write_FVS_files <- function(tree_list, stand_info, years_out = 100,
+write_FVS_files <- function(tree_list, stand_info, proj_len = 100,
                             calibrate = TRUE, triple = FALSE,
                             add_regen = FALSE, custom_SDI_max = NULL,
                             random_seed = NULL, STDIDENT = 'FVSProjection',
@@ -51,7 +52,7 @@ write_FVS_files <- function(tree_list, stand_info, years_out = 100,
   treefile_name <- paste0(filename, ".tre")
 
   write_FVS_TRE(tree_list, stand_info, treefile_name = treefile_name)
-  write_FVS_KEY(stand = stand, years_out = years_out, calibrate = calibrate,
+  write_FVS_KEY(stand = stand, proj_len = proj_len, calibrate = calibrate,
                 triple = triple, add_regen = add_regen, custom_SDI_max = custom_SDI_max,
                 random_seed = random_seed, STDIDENT = STDIDENT, ..., keyfile_name = keyfile_name)
 
@@ -64,7 +65,7 @@ write_FVS_files <- function(tree_list, stand_info, years_out = 100,
 #' This can then be inspected and passed to run_FVS().
 #'
 #' @param stand Dataframe. Stand data (for a single stand) for running FVS.
-#' @param years_out How many years out should we project? Default 100.
+#' @param proj_len How long, in years, should the projection be? Default 100.
 #' @param calibrate Logical. Should self-calibration be used? Default TRUE.
 #' @param triple Logical. Should tripling be turned on? Default FALSE.
 #' @param add_regen Logical. Should regeneration be modeled? Default FALSE.
@@ -85,10 +86,11 @@ write_FVS_files <- function(tree_list, stand_info, years_out = 100,
 #'   cycle length to change to.
 #' * `READCORD`, `READCORR`: Vectors of numeric values. Length must be 23 to
 #'   match the number of species in the variant.
+#'  * `CYCLEAT`: Additional reporting year.
 #'
 #' @returns Keyword filename, invisibly.
 write_FVS_KEY <- function(stand,
-                          years_out,
+                          proj_len,
                           calibrate,
                           triple,
                           add_regen,
@@ -223,10 +225,17 @@ write_FVS_KEY <- function(stand,
   write('', file = keyfile_name, append = TRUE)
 
   # number of cycles
-  cycles <- ceiling(years_out / cycle_length)
+  cycles <- ceiling(proj_len / cycle_length)
 
   t1 <- sprintf("NUMCYCLE  %10i", cycles)
   write(t1, file = keyfile_name, append = TRUE)
+
+  if(!is.null(opt_args$CYCLEAT)){
+    for(i in seq_along(opt_args$CYCLEAT)){
+      t1 <- sprintf("CYCLEAT %10i", opt_args$CYCLEAT)
+      write(t1, file = keyfile_name, append = TRUE)
+    }
+  }
 
 
   write("PROCESS", file = keyfile_name, append = TRUE)

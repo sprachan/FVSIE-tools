@@ -30,12 +30,13 @@ the final simulation year; \verb{$summary} is the FVS summary table.
 When used with no additional arguments, runs FVS with these
 default parameters:
 \itemize{
-\item 100 years (modify with \code{years_out})
+\item 100 years (modify with \code{proj_len})
 \item Self-calibration turned ON (use \code{calibrate = FALSE} to disable)
 \item Tripling turned off (use \code{triple = TRUE} to turn on)
 \item Regeneration turned off (use \code{add_regen = TRUE } to turn on).
+}
+
 See \code{\link[=write_FVS_files]{write_FVS_files()}} for details on additional arguments to control the
 simulation. Currently only supports reporting after the first cycle. Future
 development to expand this functionality.
-}
 }
