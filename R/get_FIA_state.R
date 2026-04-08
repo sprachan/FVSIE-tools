@@ -26,21 +26,21 @@ get_FIA_state <- function(db_loc, fia_cond_subset, verbose = FALSE,
 
   fia_db_conn <- DBI::dbConnect(RSQLite::SQLite(), db_loc)
   stopifnot(c('FVS_STANDINIT_PLOT', 'FVS_TREEINIT_PLOT') %in% DBI::dbListTables(fia_db_conn),
-            is.data.frame(fia_cond_subset))
-
+            is.data.frame(fia_cond_subset),
+            all(c('PLT_CN', 'COUNTYCD', 'UNITCD', 'PLOT', 'OWNCD') %in% colnames(fia_cond_subset)))
   # from Gemini: safer way to make sure database is disconnected
   on.exit(DBI::dbDisconnect(fia_db_conn), add = TRUE)
 
-  # from Gemini: use a temporary table in SQLite instead of massive 'IN'
-  #> clause to improve performance.
-
   pcn_remote <- dplyr::copy_to(dest = fia_db_conn,
-                               df = fia_cond_subset[c('PLT_CN', 'COUNTYCD', 'UNITCD', 'PLOT')],
+                               df = fia_cond_subset[c('PLT_CN',
+                                                      'COUNTYCD',
+                                                      'UNITCD',
+                                                      'PLOT',
+                                                      'OWNCD')],
                                name = 'temp_pcn',
                                overwrite = TRUE,
                                temporary = TRUE)
-  stopifnot(c('COUNTYCD', 'PLOT') %in% colnames(pcn_remote))
-  if(sum(c('COUNTYCD', 'PLOT') %in% colnames(pcn_remote)) != 2){
+  if(!any(c('COUNTYCD', 'PLOT') %in% colnames(pcn_remote))){
     cat(sort(colnames(pcn_remote)), '\n',
         sort(colnames(dplyr::tbl(fia_db_conn, 'FVS_STANDINIT_PLOT'))))
     stop()
@@ -65,9 +65,10 @@ get_FIA_state <- function(db_loc, fia_cond_subset, verbose = FALSE,
                   .data$DG_TRANS, .data$DG_MEASURE,
                   .data$HTG_TRANS, .data$HTG_MEASURE,
                   .data$MORT_MEASURE,
-                  .data$SITE_SPECIES, .data$SITE_INDEX)
+                  .data$SITE_SPECIES, .data$SITE_INDEX,
+                  .data$OWNCD)
   if(verbose){
-    message('SQL query:', dplyr::show_query(stand_initQ))
+    message('SQL query: ', dplyr::show_query(stand_initQ))
   }
 
   stand_init <- dplyr::collect(stand_initQ)
@@ -118,5 +119,4 @@ get_FIA_state <- function(db_loc, fia_cond_subset, verbose = FALSE,
   }
 
   return(list(FVS_StandInit = stand_init, FVS_TreeInit = fia_tree))
-
 }
