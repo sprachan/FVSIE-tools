@@ -312,25 +312,33 @@ write_FVS_TRE <- function(tree_list, stand_info, treefile_name)
 #'
 
 clean_FIA_tree_list <- function(tree_list, stand_info){
-  # copy over information from the stand list
-  out <- dplyr::select(stand_info,
-                            .data$SLOPE, .data$ASPECT, .data$PV_CODE, .data$TOPO,
-                            .data$STAND_CN) |>
-    dplyr::right_join(tree_list, by = 'STAND_CN') |>
+  stopifnot('STAND_CN' %in% colnames(tree_list))
+  stand_cols <- c('SLOPE', 'ASPECT', 'TOPO')
+  # if any of these are missing from tree list, get them from stand table
+  if(any(!(stand_cols %in% colnames(tree_list)))){
+    needed_cols <- stand_cols[!stand_cols %in% colnames(tree_list)]
+    tree_list <- tree_list |>
+      dplyr::left_join(stand_info[c(needed_cols, 'STAND_CN')],
+                       by = 'STAND_CN')
+  }
+  out <- tree_list |>
+    dplyr::select(-PV_CODE) |>
+    dplyr::left_join(stand_info[c('PV_CODE', 'STAND_CN')], by = 'STAND_CN') |>
     dplyr::mutate(SPREP = 0,
                   TVAL = 0,
                   CUT = 0,
+                  # FVS tree init PV is always NA, so need to get from stand info
                   PV_CODE = as.numeric(.data$PV_CODE),
                   # make crown ratio into 10% classes, per Essential FVS p. 41:
                   #> 1: 0-10%; 2: 11-20%; ..., 9: 81-100%
                   #> Because they say 0-10%, 11-20%, I assume that e.g., 10.5% counts as 10%...
-                 CRcode = cut(.data$CRRATIO, breaks = c(0, 11, 21, 31, 41, 51, 61, 71, 81, 100),
-                                         labels = FALSE,
-                                         right = FALSE,
-                                         include.lowest = TRUE),
+                  CRcode = cut(.data$CRRATIO, breaks = c(0, 11, 21, 31, 41, 51, 61, 71, 81, 100),
+                               labels = FALSE,
+                               right = FALSE,
+                               include.lowest = TRUE),
                   DAMAGE1 = ifelse(!is.na(.data$HTTOPK),
-                                         yes = 97,
-                                         no = 0),
+                                   yes = 97,
+                                   no = 0),
                   DAMAGE2 = 0,
                   DAMAGE3 = 0,
                   SEVERITY1 = 0,
