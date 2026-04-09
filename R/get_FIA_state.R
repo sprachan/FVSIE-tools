@@ -49,24 +49,7 @@ get_FIA_state <- function(db_loc, fia_cond_subset, verbose = FALSE,
   # from Gemini: use inner_join with temporary remote table. It's faster than
   #> filtering by a large vector.
   stand_initQ <- dplyr::tbl(fia_db_conn, 'FVS_STANDINIT_PLOT')|>
-    dplyr::inner_join(pcn_remote, by = c('STAND_CN' = 'PLT_CN')) |>
-    dplyr::select(.data$STAND_CN, .data$STAND_ID,
-                  .data$VARIANT,
-                  .data$STATE, .data$COUNTYCD, .data$UNITCD, .data$PLOT,
-                  .data$INV_DAY, .data$INV_YEAR, .data$INV_MONTH,
-                  .data$LATITUDE, .data$LONGITUDE, .data$REGION,
-                  .data$FOREST, .data$PV_CODE, .data$ECOREGION,
-                  .data$BASAL_AREA_FACTOR, .data$INV_PLOT_SIZE,
-                  .data$BRK_DBH,
-                  .data$AGE,
-                  .data$ASPECT, .data$SLOPE, .data$TOPO, .data$ELEVFT,
-                  .data$NUM_PLOTS,
-                  .data$MAX_SDI,
-                  .data$DG_TRANS, .data$DG_MEASURE,
-                  .data$HTG_TRANS, .data$HTG_MEASURE,
-                  .data$MORT_MEASURE,
-                  .data$SITE_SPECIES, .data$SITE_INDEX,
-                  .data$OWNCD)
+    dplyr::inner_join(pcn_remote, by = c('STAND_CN' = 'PLT_CN'))
   if(verbose){
     message('SQL query: ', dplyr::show_query(stand_initQ))
   }
@@ -83,19 +66,7 @@ get_FIA_state <- function(db_loc, fia_cond_subset, verbose = FALSE,
   stand_init$INV_YEAR <- stand_init$INV_YEAR + as.integer(stand_init$INV_MONTH >= 7)
   # get tree info
   fia_treeQ <- dplyr::tbl(fia_db_conn, 'FVS_TREEINIT_PLOT') |>
-    dplyr::inner_join(pcn_remote, by = c('STAND_CN' = 'PLT_CN')) |>
-    dplyr::select(.data$STAND_CN, .data$STAND_ID, .data$STANDPLOT_ID,
-                  .data$PLOT_ID, .data$PLOT_CN,
-                  .data$TREE_ID, .data$HISTORY, .data$TREE_COUNT,
-                  .data$SPECIES,
-                  .data$DIAMETER, .data$DG,
-                  .data$HT, .data$HTTOPK, .data$HTG, .data$HT_TO_CROWN_BASE,
-                  .data$CRRATIO,
-                  .data$DEFECT_CUBIC, .data$DEFECT_BOARD,
-                  .data$DAMAGE1, .data$SEVERITY1, .data$DAMAGE2, .data$SEVERITY2,
-                  .data$DAMAGE3, .data$SEVERITY3,
-                  .data$AGE,
-                  .data$BH_YEARS)
+    dplyr::inner_join(pcn_remote, by = c('STAND_CN' = 'PLT_CN'))
   if(verbose){
     message('SQL query to get tree info: ', dplyr::show_query(fia_treeQ))
   }
@@ -113,7 +84,7 @@ get_FIA_state <- function(db_loc, fia_cond_subset, verbose = FALSE,
                              stand_init$UNITCD,
                              stand_init$PLOT)
     fia_tree <- fia_tree |>
-      dplyr::left_join(stand_init[c('PID', 'STAND_CN')],
+      dplyr::left_join(stand_init[c('PID', 'STAND_CN', 'INV_YEAR')],
                        by = dplyr::join_by('STAND_CN')) |>
       dplyr::mutate(TUID = paste0(.data$PID, .data$PLOT_ID, .data$TREE_ID))
   }
