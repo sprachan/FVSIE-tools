@@ -11,9 +11,9 @@
 #' simulation. Currently only supports reporting after the first cycle. Future
 #' development to expand this functionality.
 #'
-#' @param tree_list Tree list.
 #' @param stand_info Stand information for the single stand corresponding to
 #'   `tree_list`.
+#' @param tree_list Tree list.
 #' @param out_dir Directory to write keyword, tree, and .out files to.
 #' @param fvs_bin FVS software location.
 #' @param ... Additional arguments passed to `write_FVS_files()` to control
@@ -25,7 +25,7 @@
 #'   the final simulation year; `$summary` is the FVS summary table.
 #' @export
 
-run_FVS <- function(tree_list, stand_info, out_dir, fvs_bin, ..., verbose = FALSE){
+run_FVS <- function(stand_info, tree_list, out_dir, fvs_bin, ..., verbose = FALSE){
   opt_args <- list(...)
   # argument checking
   stopifnot('Ensure that fvs_bin is a character string' = is.character(fvs_bin))
