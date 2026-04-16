@@ -12,12 +12,12 @@ Imports:
     DBI,
     dbplyr,
     dplyr,
+    future.apply,
+    future,
     rlang,
     RSQLite,
     rFVS,
-    stringr,
-    future.apply,
-    future
+    stringr
 Remotes: USDAForestService/ForestVegetationSimulator-Interface/rFVS
 Suggests: 
     testthat (>= 3.0.0)
