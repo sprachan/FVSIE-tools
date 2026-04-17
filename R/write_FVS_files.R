@@ -322,7 +322,7 @@ clean_FIA_tree_list <- function(tree_list, stand_info){
                        by = 'STAND_CN')
   }
   out <- tree_list |>
-    dplyr::select(-PV_CODE) |>
+    dplyr::select(-.data$PV_CODE) |>
     dplyr::left_join(stand_info[c('PV_CODE', 'STAND_CN')], by = 'STAND_CN') |>
     dplyr::mutate(SPREP = 0,
                   TVAL = 0,
