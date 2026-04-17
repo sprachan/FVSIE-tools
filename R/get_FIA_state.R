@@ -1,23 +1,19 @@
 #' Get FVS-ready FIA data from a state-level database
 #'
-#' `get_FIA_state()` fetches FVS Stand and FVS Tree tables from a downloaded FIA
-#' database. Note that these tables are only available at the state-level, so
+#' `get_FIA_state()` fetches FVS Stand and FVS Tree tables from a downloaded state-level FIA
+#' database (from the [FIA datamart website](https://apps.fs.usda.gov/fia/datamart/datamart.html)). Note that these tables are only available at the state-level, so
 #' this function only works with state-level databases.
 #'
-#' @param db_loc Location for the FIA database.
+#' @param db_loc Character string. Location for the FIA database.
 #' @param fia_cond_subset Dataframe. A subset of an FIA COND table.
 #' @param verbose Boolean value. If TRUE, will print SQL queries to console.
 #' @param add_identifiers Boolean value. If TRUE, will add a PID (Plot IDentifier) column to the stand table and a TUID (Tree Unique IDentifier) column to the tree table. PID and TUID are unique, persistent identifiers. They uniquely identify each FIA plot and each tree in each plot. Unlike FIA-provided identifiers, these stay the same across all years.
 #'
-#' @returns List of 2. FVS_StandInit is a dataframe of the stand information. FVS_TreeInit is a dataframe of all tree measurements. A single stand from this list selected with STAND_CN and the associated tree list (matching STAND_CN) can be passed to `run_FVS()`.
+#' @returns `get_FIA_state()`: List of 2. $FVS_StandInit is a dataframe of the stand information. $FVS_TreeInit is a dataframe of all tree measurements. A single stand from this list selected with STAND_CN and the associated tree list (matching STAND_CN) can be passed to `run_FVS()`.
 #' @examples
 #'
 #' db_loc <- system.file('extdata', 'dummy_fia.db', package = 'rFVSIEtools')
-#' con <- DBI::dbConnect(RSQLite::SQLite(), db_loc)
-#' cond <- dplyr::tbl(con, 'COND') |>
-#'         dplyr::filter(STATECD == 30) |>
-#'         dplyr::collect()
-#' DBI::dbDisconnect(con)
+#' cond <- fetch_cond(db_loc, 'STATECD == 30, INVYR >= 2001')
 #' get_FIA_state(db_loc, cond)
 #'
 #' @export
@@ -91,3 +87,32 @@ get_FIA_state <- function(db_loc, fia_cond_subset, verbose = FALSE,
 
   return(list(FVS_StandInit = stand_init, FVS_TreeInit = fia_tree))
 }
+
+#' Fetch filtered FIA condition table for subsetting
+#'
+#' `fetch_cond()` is a convenience function for fetching subsets of COND tables for use with [get_FIA_state()].
+#'
+#' @param db_loc Character string. Location for the FIA database.
+#' @param filter_statements Character string of dplyr-style filter statements.
+#'   Column names in the filter_statements arguments must match columns in the
+#'   COND table from the [NFI
+#'   database](https://research.fs.usda.gov/sites/default/files/2025-08/wo-v9-4_Aug2025_UG_FIADB_database_description_NFI.pdf).
+#'   See examples.
+#'
+#' @returns `fetch_cond()`: COND data frame for use as a filter for `get_FIA_state()`.
+#' @rdname get_FIA_state
+#' @export
+#'
+#'
+fetch_cond <- function(db_loc, filter_statements){
+  fia_db_conn <- DBI::dbConnect(RSQLite::SQLite(), db_loc)
+  on.exit(DBI::dbDisconnect(fia_db_conn))
+
+  stopifnot('COND table not found in database.' = 'COND' %in% DBI::dbListTables(fia_db_conn))
+  stopifnot("Filter statement must be a character string or vector" = typeof(filter_statements) == 'character',
+            length(filter_statements) == 1)
+  filt <- stringr::str_replace(filter_statements, ',', ';')
+  dplyr::tbl(fia_db_conn, 'COND') |>
+    dplyr::collect() |>
+    dplyr::filter(!!!rlang::parse_exprs(filt))
+  }

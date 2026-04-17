@@ -2,6 +2,7 @@
 % Please edit documentation in R/get_FIA_state.R
 \name{get_FIA_state}
 \alias{get_FIA_state}
+\alias{fetch_cond}
 \title{Get FVS-ready FIA data from a state-level database}
 \usage{
 get_FIA_state(
@@ -10,32 +11,39 @@ get_FIA_state(
   verbose = FALSE,
   add_identifiers = FALSE
 )
+
+fetch_cond(db_loc, filter_statements)
 }
 \arguments{
-\item{db_loc}{Location for the FIA database.}
+\item{db_loc}{Character string. Location for the FIA database.}
 
 \item{fia_cond_subset}{Dataframe. A subset of an FIA COND table.}
 
 \item{verbose}{Boolean value. If TRUE, will print SQL queries to console.}
 
 \item{add_identifiers}{Boolean value. If TRUE, will add a PID (Plot IDentifier) column to the stand table and a TUID (Tree Unique IDentifier) column to the tree table. PID and TUID are unique, persistent identifiers. They uniquely identify each FIA plot and each tree in each plot. Unlike FIA-provided identifiers, these stay the same across all years.}
+
+\item{filter_statements}{Character string of dplyr-style filter statements.
+Column names in the filter_statements arguments must match columns in the
+COND table from the \href{https://research.fs.usda.gov/sites/default/files/2025-08/wo-v9-4_Aug2025_UG_FIADB_database_description_NFI.pdf}{NFI database}.
+See examples.}
 }
 \value{
-List of 2. FVS_StandInit is a dataframe of the stand information. FVS_TreeInit is a dataframe of all tree measurements. A single stand from this list selected with STAND_CN and the associated tree list (matching STAND_CN) can be passed to \code{run_FVS()}.
+\code{get_FIA_state()}: List of 2. $FVS_StandInit is a dataframe of the stand information. $FVS_TreeInit is a dataframe of all tree measurements. A single stand from this list selected with STAND_CN and the associated tree list (matching STAND_CN) can be passed to \code{run_FVS()}.
+
+\code{fetch_cond()}: COND data frame for use as a filter for \code{get_FIA_state()}.
 }
 \description{
-\code{get_FIA_state()} fetches FVS Stand and FVS Tree tables from a downloaded FIA
-database. Note that these tables are only available at the state-level, so
+\code{get_FIA_state()} fetches FVS Stand and FVS Tree tables from a downloaded state-level FIA
+database (from the \href{https://apps.fs.usda.gov/fia/datamart/datamart.html}{FIA datamart website}). Note that these tables are only available at the state-level, so
 this function only works with state-level databases.
+
+\code{fetch_cond()} is a convenience function for fetching subsets of COND tables for use with \code{\link[=get_FIA_state]{get_FIA_state()}}.
 }
 \examples{
 
 db_loc <- system.file('extdata', 'dummy_fia.db', package = 'rFVSIEtools')
-con <- DBI::dbConnect(RSQLite::SQLite(), db_loc)
-cond <- dplyr::tbl(con, 'COND') |>
-        dplyr::filter(STATECD == 30) |>
-        dplyr::collect()
-DBI::dbDisconnect(con)
+cond <- fetch_cond(db_loc, 'STATECD == 30, INVYR >= 2001')
 get_FIA_state(db_loc, cond)
 
 }
