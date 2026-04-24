@@ -111,7 +111,7 @@ fetch_cond <- function(db_loc, filter_statements){
   stopifnot('COND table not found in database.' = 'COND' %in% DBI::dbListTables(fia_db_conn))
   stopifnot("Filter statement must be a character string or vector" = typeof(filter_statements) == 'character',
             length(filter_statements) == 1)
-  filt <- stringr::str_replace(filter_statements, ',', ';')
+  filt <- stringr::str_replace_all(filter_statements, ',', ';')
   dplyr::tbl(fia_db_conn, 'COND') |>
     dplyr::collect() |>
     dplyr::filter(!!!rlang::parse_exprs(filt))
