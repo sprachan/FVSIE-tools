@@ -12,6 +12,12 @@ facilitate running the Forest Vegetation Simulator-Inland Empire Variant
 (FVS-IE), including tools for processing Forest Inventory and Analysis
 (FIA) data into FVS-ready formats.
 
+## Intended Use
+
+This package is primarily intended to streamline the use of FIA data
+with FVS and making multiple slightly different FVS runs (e.g., for
+testing calibration techniques).
+
 A typical workflow for running FVS on FIA data without this package
 would be something like the following:
 
@@ -35,7 +41,7 @@ would be something like the following:
 
     3)  Write tree files by hand or with `sprintf()`.
 
-    4)  Load FVS with `rFVS::fvsLoad`
+    4)  Load FVS with `rFVS::fvsLoad()`
 
     5)  Start an FVS run using `rFVS::fvsSetCmdLine()` followed by
         `rFVS::fvsInteractRun()` or `rFVS::interactRun()`
@@ -43,12 +49,13 @@ would be something like the following:
 6.  Combine each individually-run stand into one big stand dataframe,
     combine all trees into one big tree dataframe, and save results.
 
-This workflow is doable, but it gets frustrating when you have to do
-slightly different runs on the same set of stands (e.g., to tweak
-calibration). `rFVSIEtools` simplifies the workflow to the following:
+This workflow is doable, but it gets quite long and error-prone when you
+have to do slightly different runs on the same set of stands.
+`rFVSIEtools` simplifies the workflow to the following:
 
 1.  Filter the FIA COND table to reflect the conditions from which to
-    get stand and tree information.
+    get stand and tree information. This can now be done in a single
+    line with `fetch_cond()`.
 
 2.  Get properly FVS-formatted stand and tree tables from state-level
     FIA data using `get_FIA_state()`.
@@ -63,7 +70,7 @@ calibration). `rFVSIEtools` simplifies the workflow to the following:
 
 1)  Use `run_FVS()` to run FVS.
 
-## Example: Project growth all FIA stands on Forested Public Land in Montana
+## Example: Project growth for all FIA stands on forested public land in Montana
 
 First, we subset the FIA data using the COND table (see [the NFI user
 guide](https://research.fs.usda.gov/sites/default/files/2025-08/wo-v9-4_Aug2025_UG_FIADB_database_description_NFI.pdf)
@@ -78,15 +85,7 @@ fia_path <- file.path('data', 'raw_data', 'fia')
 db_path <- file.path(fia_path, 'SQLite_FIADB_MT.db')
 
 # open database connection and subset COND table
-conn <- DBI::dbConnect(RSQLite::SQLite, db_path)
-cond_subset <- conn |>
-  tbl('COND') |>
-  filter(COND_STATUS_CD == 1,
-         COND_PROP_UNADJ == 1,
-         OWNGRPCD < 40) |>
-  collect() 
-
-DBI::dbDisconnect(conn)
+cond_subset <- fetch_cond(db_loc, 'STATECD == 30, INVYEAR >= 2001')
 ```
 
 Then, we get FVS-ready stand and tree data from the selected FIA stands:
@@ -147,7 +146,7 @@ website](https://www.fs.usda.gov/fvs/software/complete.php), you can
 load `rFVS` using:
 
 ``` r
-library(package = "rFVS", lib.loc =  file.path("<FVS Location>", "FVS", "FVSSoftware", "R", "R-<version number", "library", "rFVS")
+# library(package = "rFVS", lib.loc =  file.path("<FVS Location>", "FVS", "FVSSoftware", "R", "R-<version number", "library", "rFVS")
 ```
 
 If that doesn’t work, then follow [the instructions on the rFVS wiki to
@@ -168,3 +167,9 @@ Or:
 # install.packages("remotes")
 remotes::install_github("sprachan/FVSIE-tools")
 ```
+
+## Caveats
+
+This package is still in development. Support for individual use cases
+may vary; reporting functionality is particularly limited. See the
+issues tab.
