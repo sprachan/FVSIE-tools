@@ -4,13 +4,13 @@
 \alias{run_FVS}
 \title{Run FVS-IE.}
 \usage{
-run_FVS(tree_list, stand_info, out_dir, fvs_bin, ..., verbose = FALSE)
+run_FVS(stand_info, tree_list, out_dir, fvs_bin, ..., verbose = FALSE)
 }
 \arguments{
-\item{tree_list}{Tree list.}
-
 \item{stand_info}{Stand information for the single stand corresponding to
 \code{tree_list}.}
+
+\item{tree_list}{Tree list.}
 
 \item{out_dir}{Directory to write keyword, tree, and .out files to.}
 
