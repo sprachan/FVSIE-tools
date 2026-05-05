@@ -64,11 +64,8 @@ have to do slightly different runs on the same set of stands.
     stand and tree list at once. This runs FVS in parallel, which is
     much faster than a for loop for many (\>100 or so) stands.
 
-4.  For just a few stands, run a for loop over each stand and:
-
-<!-- -->
-
-1)  Use `run_FVS()` to run FVS.
+4.  For just a few stands, run a for loop over each stand and use
+    `run_FVS()` to run FVS.
 
 ## Example: Project growth for all FIA stands on forested public land in Montana
 
