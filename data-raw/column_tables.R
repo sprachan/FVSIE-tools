@@ -18,7 +18,7 @@ fvs_stand_cols <- data.frame(col = c('STAND_ID', 'STANDPLOT_CN',
                                      'MAX_BA', 'MAX_SDI', 'SITE_SPECIES', 'SITE_INDEX',
                                      'MODEL_TYPE', 'PHYSIO_REGION', 'FOREST_TYPE',
                                      'STATE', 'COUNTY',
-                                     'FUEL_MODEL', 'FUEL_0_25', 'FUEL_0_25',
+                                     'FUEL_MODEL', 'FUEL_0_25',
                                      'FUEL_0_25_1', 'FUEL_0_1','FUEL_1_3',
                                      'FUEL_3_6', 'FUEL_6_12', 'FUEL_12_20',
                                      'FUEL_GT_12', 'FUEL_20_35', 'FUEL_35_50',
@@ -43,7 +43,7 @@ fvs_stand_cols <- data.frame(col = c('STAND_ID', 'STANDPLOT_CN',
                                          NA, NA, NA, NA,
                                          NA, NA, NA,
                                          22, 9999,
-                                         NA, NA, NA,
+                                         NA, NA,
                                          NA, NA, NA,
                                          NA, NA, NA,
                                          NA, NA, NA,
@@ -51,10 +51,15 @@ fvs_stand_cols <- data.frame(col = c('STAND_ID', 'STANDPLOT_CN',
                                          NA, NA,
                                          NA),
                              has_default = TRUE,
-                             alt_col = '')
+                             alt_col = '') |>
+  dplyr::mutate(dtype = dplyr::case_when(grepl('ID', col) ~ 'any',
+                                         col == 'GROUPS' ~ 'character',
+                                         col == 'VARIANT' ~ 'character',
+                                         .default = 'numeric'))
 fvs_stand_cols$has_default[fvs_stand_cols$default == 9999] <- FALSE
 fvs_stand_cols$alt_col[fvs_stand_cols$col == 'HABITAT_TYPE'] <- 'PV_CODE'
 fvs_stand_cols$alt_col[fvs_stand_cols$col == 'STAND_ID'] <- 'STAND_CN'
+fvs_stand_cols$alt_col[fvs_stand_cols$col == 'STAND_ORIGIN_CODE'] <- 'STDORGCD'
 
 ## Tree List Columns
 fvs_tree_cols <- data.frame(col = c('STAND_ID', 'STANDPLOT_CN',
@@ -84,7 +89,8 @@ fvs_tree_cols <- data.frame(col = c('STAND_ID', 'STANDPLOT_CN',
                                         NA, NA,
                                         NA, NA, NA),
                             has_default = TRUE,
-                            alt_col = '')
+                            alt_col = '') |>
+  dplyr::mutate(dtype = ifelse(grepl('ID', col), 'any', 'numeric'))
 
 fvs_tree_cols$has_default[fvs_tree_cols$default == 9999] <- FALSE
 fvs_tree_cols$alt_col[fvs_tree_cols$col == 'STAND_ID'] <- 'STAND_CN'

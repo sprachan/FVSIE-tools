@@ -9,12 +9,14 @@ search_cols(user_df, col_df)
 \arguments{
 \item{user_df}{User-supplied dataframe}
 
-\item{col_df}{Dataframe containing column information (column name, alternative names, defaults)}
+\item{col_df}{Dataframe containing column information (column name,
+alternative names, defaults)}
 }
 \value{
-2-column dataframe. First column is the required column, second column is the matching column found in the data.
+2-column dataframe. First column is the required column, second
+column is the matching column found in the data.
 }
 \description{
-Search a user-supplied dataframe for necessary columns
+TODO: refactor to use matrix multiplication for speed improvements.
 }
 \keyword{internal}
