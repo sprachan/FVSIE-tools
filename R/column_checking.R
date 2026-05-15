@@ -59,18 +59,18 @@ set_stand_cols <- function(stand_info, quiet = TRUE){
 #' @keywords internal
 #'
 set_default <- function(req_var, col_info, user_df, quiet){
+  # row has 2 columns: required_col and data_col, each a character
   row <- col_info[col_info$required_col == req_var,]
-  if(!is.na(row$data_col)){
-    out <- unlist(unname(user_df[row$data_col]))
-  }else{
+
+  if(is.na(row$data_col)){
     stopifnot(row$has_default)
-    if(!quiet){
-      message('Filling in default value, ', row$default,
-              ', for column ', req_var)
-    }
-    # one default is 'IE', so everything else in the column is a string
+    if(!quiet) message('Filling in default value, ', row$default, ', for column ', req_var)
     out <- row$default
+  }else{
+    out <- unlist(unname(user_df[row$data_col]))
   }
+
+  # one default is 'IE', so everything else in the column is a string
   if(typeof(out) != row$dtype){
     return(suppressWarnings(as.vector(out, mode = row$dtype)))
   }
