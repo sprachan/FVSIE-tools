@@ -2,19 +2,21 @@
 #'
 #' This function, wrapped in [run_FVS()], writes and saves .key and .tre files
 #' that FVS-IE uses to initialize and carry out a simulation. Use outside of
-#' `run_FVS()` when diagnostics on these files are needed.
+#' `run_FVS()` when diagnostics on these files are needed. If necessary columns
+#' aren't found in the data, defaults will be filled verbosely; wrap the call in
+#' `suppressMessages()` to ignore messages.
 #'
 #' @param tree_list Tree list to be run through FVS, e.g., FVS_TreeInit output
 #'   from get_FIA()
 #' @param stand_info Stand data to be run through FVS, e.g., FVS_StandInit
 #'   output from get_FIA()
-#' @param proj_len How many years ahead should we project?
+#' @param out_dir Directory to write files to.
+#' @param proj_len How many years ahead should we project? Default 100.
 #' @param calibrate Logical. Should self-calibration be used? Default TRUE.
 #' @param triple Logical. Should tripling be turned on? Default FALSE.
 #' @param add_regen Logical. Should regeneration be modeled? Default FALSE.
 #' @param custom_SDI_max Optional. Maximum stand density index.
 #' @param random_seed For replicability. Default 2025. To turn off, set to NULL.
-#' @param out_dir Directory to write files to.
 #' @param file_prefix Optional. If provided, KEY and TRE files with temp names
 #'   will have this prefix.
 #' @param STDIDENT Optional. Stand Identity keyword to pass to FVS.
@@ -33,14 +35,13 @@
 #'
 #' @returns The filename created for .key and .tre files, invisibly.
 #' @export
-write_FVS_files <- function(tree_list, stand_info, proj_len = 100,
+write_FVS_files <- function(tree_list, stand_info, out_dir,
+                            proj_len = 100,
                             calibrate = TRUE, triple = FALSE,
                             add_regen = FALSE, custom_SDI_max = NULL,
                             random_seed = NULL, STDIDENT = 'FVSProjection',
-                            out_dir, file_prefix = NULL, ...){
+                            file_prefix = NULL, ...){
   stopifnot('Output directory does not exist' = dir.exists(out_dir))
-  stand <- set_FVSie_defaults(stand_info)
-
   # generate file names
   if(is.null(file_prefix)){
     filename <- tempfile(tmpdir = out_dir)
@@ -52,7 +53,7 @@ write_FVS_files <- function(tree_list, stand_info, proj_len = 100,
   treefile_name <- paste0(filename, ".tre")
 
   write_FVS_TRE(tree_list, stand_info, treefile_name = treefile_name)
-  write_FVS_KEY(stand = stand, proj_len = proj_len, calibrate = calibrate,
+  write_FVS_KEY(stand = stand_info, proj_len = proj_len, calibrate = calibrate,
                 triple = triple, add_regen = add_regen, custom_SDI_max = custom_SDI_max,
                 random_seed = random_seed, STDIDENT = STDIDENT, ..., keyfile_name = keyfile_name)
 
@@ -99,6 +100,7 @@ write_FVS_KEY <- function(stand,
                           STDIDENT,
                           ...,
                           keyfile_name){
+  stand <- set_stand_cols(stand, quiet = FALSE)
   opt_args <- list(...)
   # stand identification
   write("STDIDENT", file = keyfile_name, append = TRUE)
@@ -269,7 +271,8 @@ write_FVS_KEY <- function(stand,
 #' @returns The tree file name, invisibly.
 
 write_FVS_TRE <- function(tree_list, stand_info, treefile_name){
-  std <- set_FVSie_defaults(stand_info)
+  std <- set_stand_cols(stand_info, quiet = TRUE)
+
   tl <- tryCatch(fill_tree_list(tree_list, std),
                  error = function(cond){
                    message('Failed to fill in missing values and/or set crown ratio values into 10% classes ',
@@ -278,6 +281,7 @@ write_FVS_TRE <- function(tree_list, stand_info, treefile_name){
                    message('Attempting to run set_tree_cols() to make sure column names match expectations...')
                    fill_tree_list(set_tree_cols(tree_list, quiet = FALSE), std)
                  })
+
   stopifnot(!is.null(tl))
   fvs_formats <- data.frame(tree_var = c("PLOT_ID","fvs.TREE_ID","TREE_COUNT","HISTORY","SPECIES",
                                          "DBH","DG","HT","HTTOPK","HTG","CR_RATIO",
@@ -333,8 +337,9 @@ write_FVS_TRE <- function(tree_list, stand_info, treefile_name){
 
 fill_tree_list <- function(tree_list, stand_info){
   stopifnot('STAND_CN column required to match tree and stand information' =
-              'STAND_CN' %in% colnames(tree_list), 'STAND_CN' %in% colnames(stand_info))
-
+              'STAND_CN' %in% colnames(tree_list)&'STAND_CN' %in% colnames(stand_info))
+  stopifnot('Stand data frame missing a necessary column' =
+              all(c('STAND_CN', 'PV_CODE', 'PV_REF_CODE', 'SLOPE', 'ASPECT') %in% colnames(stand_info)))
   # Fill in missing site information from stand list
   out <- tree_list |>
     dplyr::mutate(PV_CODE = ifelse(is.na(.data$PV_CODE), stand_info$PV_CODE, .data$PV_CODE),
@@ -361,29 +366,4 @@ fill_tree_list <- function(tree_list, stand_info){
     out$FVS_HAB <- as.integer(out$FVS_HAB)
   }
   as.data.frame(out)
-}
-
-#' Replace NA values in stand tables with FVS-IE defaults for writing a stand list.
-#'
-#' @param stand_info Stand to set defaults for.
-#'
-#' @keywords internal
-#'
-#' @returns A dataframe.
-#'
-set_FVSie_defaults <- function(stand_info){
-  stand_info |>
-    dplyr::mutate(ASPECT = ifelse(is.na(.data$ASPECT),
-                                  yes = 0,
-                                  no = .data$ASPECT),
-                  SLOPE = ifelse(is.na(.data$SLOPE),
-                                 yes = 5,
-                                 no = .data$SLOPE),
-                  # need elevation in 100s of feet for FVS, FIA gives in ft
-                  ELEVFT = ifelse(is.na(.data$ELEVFT),
-                                  yes = 38,
-                                  no = .data$ELEVFT/100),
-                  FOREST = ifelse(is.na(.data$FOREST),
-                                  yes = 18,
-                                  no = .data$FOREST))
 }
