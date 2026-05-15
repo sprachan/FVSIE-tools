@@ -44,6 +44,8 @@ set_tree_cols <- function(tree_list, map_habcode = TRUE, quiet = TRUE,
   }else{
     df$FVS_HAB <-suppressWarnings(as.integer(df$PV_CODE))
   }
+
+  if(!quiet) message ('Done setting tree columns.')
   df
 }
 

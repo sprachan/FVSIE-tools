@@ -245,9 +245,22 @@ write_FVS_KEY <- function(stand,
   invisible(keyfile_name)
 }
 
-#' Writes tree list to .TRE file.
+#' Write a tree list dataframe to a .TRE file.
 #'
-#' @param tree_list Tree list to write.
+#' @description Before writing the treelist to a .TRE file, this function first
+#'   attempts to (cheaply) fill in missing values with stand information or
+#'   appropriate defaults. This includes matching PV Code/PV Ref code
+#'   combinations to FVS habitat type code (unless the tree list already has a
+#'   column named `FVS_HAB`).
+#'
+#'   Cheaply filling in missing values requires that column names match default
+#'   expectations, so if this first attempt fails, the more expensive
+#'   [set_tree_cols()] is called to fill in default values, then any missing
+#'   values are filled in from stand information if available. PV Code/PV Ref
+#'   Code combinations are automatically mapped to FVS habitat type values (see
+#'   [map_habcode()]).
+#'
+#' @param tree_list Dataframe; tree list to write.
 #' @param stand_info Stand table associated with tree list.
 #' @param treefile_name Destination for .TRE file.
 #'
@@ -255,23 +268,32 @@ write_FVS_KEY <- function(stand,
 #'
 #' @returns The tree file name, invisibly.
 
-write_FVS_TRE <- function(tree_list, stand_info, treefile_name)
-{
+write_FVS_TRE <- function(tree_list, stand_info, treefile_name){
   std <- set_FVSie_defaults(stand_info)
-  tl <- clean_FIA_tree_list(tree_list, std)
-
-  # replace missing values with empties
+  tl <- tryCatch(fill_tree_list(tree_list, std),
+                 error = function(cond){
+                   message('Failed to fill in missing values and/or set crown ratio values into 10% classes ',
+                           'with error: ')
+                   message(messageCondition(cond))
+                   message('Attempting to run set_tree_cols() to make sure column names match expectations...')
+                   fill_tree_list(set_tree_cols(tree_list, quiet = FALSE), std)
+                 })
+  stopifnot(!is.null(tl))
   fvs_formats <- data.frame(tree_var = c("PLOT_ID","fvs.TREE_ID","TREE_COUNT","HISTORY","SPECIES",
-                                       "DIAMETER","DG","HT","HTTOPK","HTG","CRcode",
-                                       "DAMAGE1","SEVERITY1","DAMAGE2","SEVERITY2","DAMAGE3","SEVERITY3",
-                                       "TVAL","CUT","SLOPE","ASPECT","PV_CODE","TOPO","SPREP","AGE"),
-                            format = c("%4.0f","%4.0f","%8.3f","%1.0f","%3.0f",
-                                     "%5.1f","%5.1f","%5.1f","%5.1f","%5.1f","%1.0f",
-                                     "%2.0f","%2.0f","%2.0f","%2.0f","%2.0f","%2.0f",
-                                     "%1.0f","%1.0f","%2.0f","%3.0f","%3.0f","%1.0f","%1.0f","%3.0f"))
+                                         "DBH","DG","HT","HTTOPK","HTG","CR_RATIO",
+                                         "DAMAGE1","SEVERITY1","DAMAGE2","SEVERITY2","DAMAGE3","SEVERITY3",
+                                         "TREE_VALUE","PRESCRIPTION",
+                                         "SLOPE","ASPECT","FVS_HAB",
+                                         "TOPO_CODE","SITE_PREP","AGE"),
+                            format = c("%4.0f","%4.0f","%8.3f","%1.0f","%3s",
+                                       "%5.1f","%5.1f","%5.1f","%5.1f","%5.1f","%1.0f",
+                                       "%2.0f","%2.0f","%2.0f","%2.0f","%2.0f","%2.0f",
+                                       "%1.0f","%1.0f",
+                                       "%2.0f","%3.0f","%3.0f",
+                                       "%1.0f","%1.0f","%3.0f"))
   fvs_formats$txt_format <- with(fvs_formats,paste(substring(format,1,2),"s",sep = ""))
 
-
+  # replace NAs with appropriate width whitespace, or write formatted value
   for (var in 1:nrow(fvs_formats)){
     if(fvs_formats$tree_var[var] == 'TREE_COUNT'){
       dec <- 4-nchar(tl$TREE_COUNT) # get number of 0s to put after decimal
@@ -290,20 +312,18 @@ write_FVS_TRE <- function(tree_list, stand_info, treefile_name)
   # write text file
   flat_format <- sprintf(paste(fvs_formats$txt_format,collapse = ""),
                          tl$PLOT_ID,tl$fvs.TREE_ID,tl$TREE_COUNT,tl$HISTORY,tl$SPECIES,
-                         tl$DIAMETER,tl$DG,tl$HT,tl$HTTOPK,tl$HTG,tl$CRcode,
+                         tl$DBH,tl$DG,tl$HT,tl$HTTOPK,tl$HTG,tl$CR_RATIO,
                          tl$DAMAGE1,tl$SEVERITY1,tl$DAMAGE2,tl$SEVERITY2,tl$DAMAGE3,tl$SEVERITY3,
-                         tl$TVAL,tl$CUT,
-                         tl$SLOPE,tl$ASPECT,tl$PV_CODE,tl$TOPO,tl$SPREP,tl$AGE)
+                         tl$TREE_VALUE,tl$PRESCRIPTION,
+                         tl$SLOPE,tl$ASPECT,tl$FVS_HAB,tl$TOPO_CODE,tl$SITE_PREP,tl$AGE)
   cat(flat_format, file=treefile_name, sep="\n")
   invisible(treefile_name)
 }
 
-#' Clean an FIA tree list to prepare for writing a .TRE file
+#' Fill missing values from tree list using stand information.
 #'
-#' @param tree_list Tree list, from FIA_TREEINIT_PLOT table
-#' (FVS_TreeInit from get_FIA())
-#' @param stand_info Stand information associated with the tree list
-#' (FVS_StandInit from get_FIA())
+#' @param tree_list Tree list. Dataframe.
+#' @param stand_info Stand information associated with the tree list. Dataframe.
 #'
 #' @keywords internal
 #'
@@ -311,40 +331,35 @@ write_FVS_TRE <- function(tree_list, stand_info, treefile_name)
 #' into FVS.
 #'
 
-clean_FIA_tree_list <- function(tree_list, stand_info){
-  stopifnot('STAND_CN' %in% colnames(tree_list))
-  stand_cols <- c('SLOPE', 'ASPECT', 'TOPO')
-  # if any of these are missing from tree list, get them from stand table
-  if(any(!(stand_cols %in% colnames(tree_list)))){
-    needed_cols <- stand_cols[!stand_cols %in% colnames(tree_list)]
-    tree_list <- tree_list |>
-      dplyr::left_join(stand_info[c(needed_cols, 'STAND_CN')],
-                       by = 'STAND_CN')
-  }
+fill_tree_list <- function(tree_list, stand_info){
+  stopifnot('STAND_CN column required to match tree and stand information' =
+              'STAND_CN' %in% colnames(tree_list), 'STAND_CN' %in% colnames(stand_info))
+
+  # Fill in missing site information from stand list
   out <- tree_list |>
-    dplyr::select(-.data$PV_CODE) |>
-    dplyr::left_join(stand_info[c('PV_CODE', 'STAND_CN')], by = 'STAND_CN') |>
-    dplyr::mutate(SPREP = 0,
-                  TVAL = 0,
-                  CUT = 0,
-                  # FVS tree init PV is always NA, so need to get from stand info
-                  PV_CODE = as.numeric(.data$PV_CODE),
+    dplyr::mutate(PV_CODE = ifelse(is.na(.data$PV_CODE), stand_info$PV_CODE, .data$PV_CODE),
+                  PV_REF_CODE = ifelse(is.na(.data$PV_REF_CODE), stand_info$PV_REF_CODE, .data$PV_REF_CODE),
+                  SLOPE = ifelse(is.na(.data$SLOPE), stand_info$SLOPE, .data$SLOPE),
+                  ASPECT = ifelse(is.na(.data$ASPECT), stand_info$ASPECT, .data$ASPECT),
                   # make crown ratio into 10% classes, per Essential FVS p. 41:
                   #> 1: 0-10%; 2: 11-20%; ..., 9: 81-100%
                   #> Because they say 0-10%, 11-20%, I assume that e.g., 10.5% counts as 10%...
-                  CRcode = cut(.data$CRRATIO, breaks = c(0, 11, 21, 31, 41, 51, 61, 71, 81, 100),
+                  CR_RATIO = cut(.data$CR_RATIO, breaks = c(0, 11, 21, 31, 41, 51, 61, 71, 81, 100),
                                labels = FALSE,
                                right = FALSE,
                                include.lowest = TRUE),
                   DAMAGE1 = ifelse(!is.na(.data$HTTOPK),
                                    yes = 97,
-                                   no = 0),
-                  DAMAGE2 = 0,
-                  DAMAGE3 = 0,
-                  SEVERITY1 = 0,
-                  SEVERITY2 = 0,
-                  SEVERITY3 = 0)
-  out$fvs.TREE_ID <- 1:nrow(tree_list)
+                                   no = 0))
+  if(!'FVS_HAB' %in% colnames(out)){
+    out <- out |>
+      dplyr::rowwise() |>
+      dplyr::mutate(FVS_HAB = map_habcode(PV_CODE, PV_REF_CODE)) |>
+      dplyr::ungroup()
+  }else if(typeof(out$FVS_HAB) != 'integer'){
+    warning('Converting FVS_HAB to integer, NAs may be introduced')
+    out$FVS_HAB <- as.integer(out$FVS_HAB)
+  }
   as.data.frame(out)
 }
 
