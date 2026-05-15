@@ -89,8 +89,11 @@ set_stand_cols <- function(stand_info, quiet = TRUE,
                          df$PV_CODE, df$PV_REF_CODE, verbose = map_verbose) |>
       unname()
   }else{
-    df$FVS_HAB <-suppressWarnings(as.integer(df$PV_CODE))
+    df$FVS_HAB <- suppressWarnings(as.integer(df$PV_CODE))
   }
+
+  df$ELEVATION <- ifelse(is.na(df$ELEVATION), df$ELEV_FT/100, df$ELEVATION)
+
   df
 }
 
