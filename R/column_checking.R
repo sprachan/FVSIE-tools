@@ -123,7 +123,6 @@ set_default <- function(req_var, col_info, user_df, quiet){
 
 #' Search a user-supplied dataframe for necessary columns
 #'
-#' TODO: refactor to use matrix multiplication for speed improvements.
 #' @param user_df User-supplied dataframe
 #' @param col_df Dataframe containing column information (column name,
 #'   alternative names, defaults)
@@ -135,18 +134,20 @@ set_default <- function(req_var, col_info, user_df, quiet){
 search_cols <- function(user_df, col_df){
   col_match <- character(length = length(col_df$col))
   for(col in seq_along(col_df$col)){
-    # some columns have well-defined alternative names that we'll want to check
-    #> if the default name isn't found in the dataset column names.
     against <- col_df$col[col]
     matches <- vapply(colnames(user_df),
                       FUN = \(x) check_name(x, check_against = against),
                       FUN.VALUE = logical(1))
 
-    if(nchar(col_df$alt_col[col]) > 0 & sum(matches) != 1){
-      against <- col_df$alt_col[col]
-      matches <- vapply(colnames(user_df),
-                        FUN = \(x) check_name(x, check_against = against),
-                        FUN.VALUE = logical(1))
+    if(sum(matches) != 1){
+      if(nchar(col_df$alt_col[col]) > 0){
+        matches <- vapply(colnames(user_df),
+                          FUN = \(x) check_name(x, check_against = col_df$alt_col[col]),
+                          FUN.VALUE = logical(1))
+      }else{
+        # look for exact match if there are no possible alternatives
+          matches <- colnames(user_df) == against
+      }
     }
     col_match[col] <- ifelse(sum(matches) == 1,
                              colnames(user_df)[matches],
@@ -170,15 +171,16 @@ check_name <- function(name, check_against){
   #> removing separator characters like '.' and '_', and replacing words that
   #> have common abbreviations or are interchangeable with one another
   clean_name <- toupper(name) |>
-    stringr::str_replace('[^[:alnum:]]', '') |>
-    stringr::str_replace('CD', 'CODE') |>
-    stringr::str_replace('CLASS', '') |>
-    stringr::str_replace('CODE', '')
+    gsub('[^[:alnum:]]', '', x = _) |>
+    gsub('CD', 'CODE', x = _) |>
+    gsub('CODE', '', x = _) |>
+    gsub('CLASS', '', x = _)
+
   clean_against <- toupper(check_against) |>
-    stringr::str_replace('[^[:alnum:]]', '') |>
-    stringr::str_replace('CD', 'CODE') |>
-    stringr::str_replace('CODE', '') |>
-    stringr::str_replace('CLASS', '')
+    gsub('[^[:alnum:]]', '', x = _) |>
+    gsub('CD', 'CODE', x = _) |>
+    gsub('CODE', '', x = _) |>
+    gsub('CLASS', '', x = _)
 
   clean_against == clean_name
 }
