@@ -1,12 +1,12 @@
 # Column look-up tables --------------------------------------------------------
 ## Stand List Columns ----
-fvs_stand_cols <- data.frame(col = c('STAND_ID', 'STANDPLOT_CN',
+fvs_stand_cols <- data.frame(col = c('STAND_CN', 'STANDPLOT_CN',
                                      'STANDPLOT_ID', 'PLOT_ID',
                                      'VARIANT', 'INV_YEAR',
                                      'GROUPS', 'ADD_FILES', 'FVS_KEYWORDS',
                                      'LATITUDE', 'LONGITUDE',
                                      'REGION', 'FOREST',
-                                     'HABITAT_TYPE', 'PV_REF_CODE',
+                                     'PV_CODE', 'PV_REF_CODE',
                                      'AGE',
                                      'ASPECT', 'SLOPE', 'ELEVATION', 'ELEV_FT',
                                      'BASAL_AREA_FACTOR', 'INV_PLOT_SIZE',
@@ -57,12 +57,11 @@ fvs_stand_cols <- data.frame(col = c('STAND_ID', 'STANDPLOT_CN',
                                          col == 'VARIANT' ~ 'character',
                                          .default = 'numeric'))
 fvs_stand_cols$has_default[fvs_stand_cols$default == 9999] <- FALSE
-fvs_stand_cols$alt_col[fvs_stand_cols$col == 'HABITAT_TYPE'] <- 'PV_CODE'
-fvs_stand_cols$alt_col[fvs_stand_cols$col == 'STAND_ID'] <- 'STAND_CN'
+fvs_stand_cols$alt_col[fvs_stand_cols$col == 'STAND_CN'] <- 'STAND_ID'
 fvs_stand_cols$alt_col[fvs_stand_cols$col == 'STAND_ORIGIN_CODE'] <- 'STDORGCD'
 
 ## Tree List Columns ----
-fvs_tree_cols <- data.frame(col = c('STAND_ID', 'STANDPLOT_CN',
+fvs_tree_cols <- data.frame(col = c('STAND_CN', 'STANDPLOT_CN',
                                     'STANDPLOT_ID', 'PLOT_ID',
                                     'TREE_ID', 'TREE_COUNT', 'HISTORY', 'SPECIES',
                                     'DBH', 'DG', 'HT', 'HTG', 'HTTOPK',
@@ -72,7 +71,7 @@ fvs_tree_cols <- data.frame(col = c('STAND_ID', 'STANDPLOT_CN',
                                     'DAMAGE3', 'SEVERITY3',
                                     'TREE_VALUE', 'PRESCRIPTION',
                                     'AGE',
-                                    'SLOPE', 'ASPECT', 'HABITAT_TYPE',
+                                    'SLOPE', 'ASPECT', 'PV_CODE', 'PV_REF_CODE',
                                     'TOPO_CODE', 'SITE_PREP',
                                     'CULL', 'DECAY_CODE', 'WOODLAND_STEMS'),
                             default = c(9999, NA,
@@ -80,24 +79,35 @@ fvs_tree_cols <- data.frame(col = c('STAND_ID', 'STANDPLOT_CN',
                                         9999, 1, 9999, 23,
                                         9999, NA, 9999, NA, NA,
                                         NA,
-                                        NA, NA,
-                                        NA, NA,
-                                        NA, NA,
-                                        NA, NA,
+                                        0, 0,
+                                        0, 0,
+                                        0, 0,
+                                        NA, 0,
                                         NA,
-                                        5, 0, 260,
-                                        NA, NA,
+                                        NA, NA, NA, NA,
+                                        NA, 0,
                                         NA, NA, NA),
                             has_default = TRUE,
-                            alt_col = '') |>
-  dplyr::mutate(dtype = ifelse(grepl('ID', col), 'any', 'numeric'))
+                            alt_col = '',
+                            dtype = c('any', 'any',
+                                      'any', 'integer',
+                                      'integer', 'integer', 'integer', 'character',
+                                      'double', 'double', 'double', 'double', 'double',
+                                      'integer',
+                                      'integer', 'integer',
+                                      'integer', 'integer',
+                                      'integer', 'integer',
+                                      'integer', 'integer',
+                                      'double',
+                                      'integer', 'integer', 'character', 'character',
+                                      'integer', 'integer',
+                                      'integer', 'integer', 'integer'))
 
 fvs_tree_cols$has_default[fvs_tree_cols$default == 9999] <- FALSE
-fvs_tree_cols$alt_col[fvs_tree_cols$col == 'STAND_ID'] <- 'STAND_CN'
+fvs_tree_cols$alt_col[fvs_tree_cols$col == 'STAND_CN'] <- 'STAND_ID'
 fvs_tree_cols$alt_col[fvs_tree_cols$col == 'DBH'] <- 'DIAMETER'
 fvs_tree_cols$alt_col[fvs_tree_cols$col == 'HT'] <- 'HEIGHT'
 fvs_tree_cols$alt_col[fvs_tree_cols$col == 'WOODLAND_STEMS'] <- 'WDLND_STEMS'
-fvs_tree_cols$alt_col[fvs_tree_cols$col == 'HABITAT_TYPE'] <- 'PV_CODE'
 
 # Habitat Type Lookup Tables ---------------------------------------------------
 ## ie/pvref1.f ----
@@ -818,6 +828,5 @@ pa_lookup <- merge(data.frame(plant_assoc = trimws(plant_assoc),
                    hab_lookup)
 
 # Save lookup tables internally ------------------------------------------------
-usethis::use_data(fvs_stand_cols, fvs_tree_cols,
-                  pv_key, pa_lookup, hab_lookup,
+usethis::use_data(fvs_tree_cols, fvs_stand_cols, pv_key, pa_lookup, hab_lookup,
                   internal = TRUE, overwrite = TRUE)

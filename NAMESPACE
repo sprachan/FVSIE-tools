@@ -3,6 +3,8 @@
 export(fetch_cond)
 export(fetch_trees)
 export(get_FIA_state)
+export(get_stand_columns)
+export(get_tree_columns)
 export(map_habcode)
 export(run_FVS)
 export(run_FVS_parallel)
