@@ -27,10 +27,12 @@ set_tree_cols <- function(tree_list, map_habcode = TRUE, quiet = TRUE,
   col_info <- search_cols(tree_list, fvs_tree_cols)
   missing <- col_info |>
     dplyr::filter(is.na(.data$data_col), !.data$has_default)
-  m <- c('Missing required column(s) ',
+
+  if(nrow(missing != 0)){
+    stop('Missing required column(s) ',
          paste(missing$required_col, collapse = ', '),
          ' and no default values are available.')
-  stopifnot(m = nrow(missing) == 0)
+  }
 
   df <- lapply(col_info$required_col, \(x) set_default(x, col_info, tree_list, quiet)) |>
     setNames(col_info$required_col) |>
@@ -72,14 +74,16 @@ set_stand_cols <- function(stand_info, quiet = TRUE,
   missing <- col_info |>
     dplyr::filter(is.na(.data$data_col), !.data$has_default)
 
-  m <- c('Missing required column(s) ',
+  if(nrow(missing != 0)){
+    stop('Missing required column(s) ',
          paste(missing$required_col, collapse = ', '),
          ' and no default values are available.')
-  stopifnot(m = nrow(missing) == 0)
+  }
 
   df <- lapply(col_info$required_col, \(x) set_default(x, col_info, stand_info, quiet)) |>
       setNames(col_info$required_col) |>
       as.data.frame()
+
   if(map_habcode){
     df$FVS_HAB <- mapply(map_habcode,
                          df$PV_CODE, df$PV_REF_CODE, verbose = map_verbose) |>
