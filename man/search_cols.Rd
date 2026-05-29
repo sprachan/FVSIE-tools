@@ -17,6 +17,6 @@ alternative names, defaults)}
 column is the matching column found in the data.
 }
 \description{
-TODO: refactor to use matrix multiplication for speed improvements.
+Search a user-supplied dataframe for necessary columns
 }
 \keyword{internal}

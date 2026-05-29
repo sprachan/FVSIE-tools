@@ -7,6 +7,7 @@
 write_FVS_files(
   tree_list,
   stand_info,
+  out_dir,
   proj_len = 100,
   calibrate = TRUE,
   triple = FALSE,
@@ -14,7 +15,6 @@ write_FVS_files(
   custom_SDI_max = NULL,
   random_seed = NULL,
   STDIDENT = "FVSProjection",
-  out_dir,
   file_prefix = NULL,
   ...
 )
@@ -26,7 +26,9 @@ from get_FIA()}
 \item{stand_info}{Stand data to be run through FVS, e.g., FVS_StandInit
 output from get_FIA()}
 
-\item{proj_len}{How many years ahead should we project?}
+\item{out_dir}{Directory to write files to.}
+
+\item{proj_len}{How many years ahead should we project? Default 100.}
 
 \item{calibrate}{Logical. Should self-calibration be used? Default TRUE.}
 
@@ -40,8 +42,6 @@ output from get_FIA()}
 
 \item{STDIDENT}{Optional. Stand Identity keyword to pass to FVS.}
 
-\item{out_dir}{Directory to write files to.}
-
 \item{file_prefix}{Optional. If provided, KEY and TRE files with temp names
 will have this prefix.}
 
@@ -54,7 +54,9 @@ The filename created for .key and .tre files, invisibly.
 \description{
 This function, wrapped in \code{\link[=run_FVS]{run_FVS()}}, writes and saves .key and .tre files
 that FVS-IE uses to initialize and carry out a simulation. Use outside of
-\code{run_FVS()} when diagnostics on these files are needed.
+\code{run_FVS()} when diagnostics on these files are needed. If necessary columns
+aren't found in the data, defaults will be filled verbosely; wrap the call in
+\code{suppressMessages()} to ignore messages.
 }
 \details{
 Optional arguments:
