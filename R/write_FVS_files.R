@@ -359,7 +359,7 @@ fill_tree_list <- function(tree_list, stand_info){
   if(!'FVS_HAB' %in% colnames(out)){
     out <- out |>
       dplyr::rowwise() |>
-      dplyr::mutate(FVS_HAB = map_habcode(PV_CODE, PV_REF_CODE)) |>
+      dplyr::mutate(FVS_HAB = map_habcode(.data$PV_CODE, .data$PV_REF_CODE)) |>
       dplyr::ungroup()
   }else if(typeof(out$FVS_HAB) != 'integer'){
     warning('Converting FVS_HAB to integer, NAs may be introduced')
