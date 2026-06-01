@@ -1,58 +1,31 @@
-#' Using a dataframe of requirements and defaults, set default values where needed.
+#' Check for required columns
 #'
-#' @param req_var Character. Required variable to set default for.
-#' @param col_info Dataframe, from running search_cols().
-#' @param user_df User-supplied data frame
-#' @param quiet Boolean. Should defaults be set without messages (TRUE) or with
-#'   messages (FALSE)?
+#' @param user_df User-supplied dataframe.
+#' @param col_df Dataframe of columns to check against.
 #'
-#' @returns Vector, length 1 if default filled in, length(nrow(data_col)) if no
-#'   default needed.
 #' @keywords internal
+#' @returns Error if required columns are missing, otherwise nothing.
 #'
-set_default_values <- function(req_var, col_info, user_df, quiet){
-  # row has 2 columns: required_col and data_col, each a character
-  row <- col_info[col_info$required_col == req_var,]
-
-  if(is.na(row$data_col)){
-    stopifnot(row$has_default)
-    if(!quiet) message('Filling in default value, ', row$default, ', for column ', req_var)
-    out <- row$default
-  }else{
-    out <- unlist(unname(user_df[row$data_col]))
-  }
-
-  # one default is 'IE', so everything else in the column is a string
-  if(typeof(out) != row$dtype){
-    return(suppressWarnings(as.vector(out, mode = row$dtype)))
-  }
-  return(out)
-}
-
-#' Rename a column to match the default name.
-#'
-#' @param req_var Character.
-#' @param user_df Dataframe.
-#'
-#' @returns Dataframe, same dimensions as user_df and all data preserved.
-#' @keywords internal
-#'
-rename_col <- function(req_var, user_df){
-  idx <- which(check_name(name = colnames(user_df),
-                   check_against = req_var))
-  colnames(user_df)[idx] <- req_var
-  user_df
-}
-
-
 check_cols <- function(user_df, col_df){
   col_info <- search_cols(user_df, col_df)
   missing <- col_info |>
-    dplyr::filter(is.na(.data$data_col), !.data$has_default)
-  if(nrow(missing != 0)){
-    stop('Missing required column(s) ',
-         paste(missing$required_col, collapse = ', '),
-         ' and no default values are available.')
+    dplyr::filter(is.na(.data$data_col))
+  missing_no_def <- dplyr::filter(missing, !.data$has_default)
+
+  if(nrow(missing_no_def != 0)){
+    rlang::abort(message = paste('Missing required column(s) ',
+                                 paste(missing_no_def$required_col, collapse = ', '),
+                                 ' and no default values are available.'),
+                 class = 'fvs_err_no_def')
+  }else if(nrow(missing) != 0){
+    rlang::warn(message = paste('Missing required column(s) ',
+                                paste(missing$required_col, collapse = ', '),
+                                ', but defaults may be available.',
+                                '\n See get_stand_columns() and set_stand_cols().'),
+                class = 'fvs_err_def_avail')
+
+  }else{
+    NULL
   }
 }
 
