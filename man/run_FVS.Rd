@@ -7,24 +7,26 @@
 run_FVS(stand_info, tree_list, out_dir, fvs_bin, ..., verbose = FALSE)
 }
 \arguments{
-\item{stand_info}{Stand information for the single stand corresponding to
-\code{tree_list}.}
+\item{stand_info}{Dataframe. Stand information for the single stand
+corresponding to \code{tree_list}. To view required columns, see
+\code{\link[=get_stand_columns]{get_stand_columns()}}.}
 
-\item{tree_list}{Tree list.}
+\item{tree_list}{Dataframe. List of all trees in the current stand. To view
+required columns, see \code{\link[=get_tree_columns]{get_tree_columns()}}.}
 
 \item{out_dir}{Directory to write keyword, tree, and .out files to.}
 
 \item{fvs_bin}{FVS software location.}
 
-\item{...}{Additional arguments passed to \code{write_FVS_files()} to control
+\item{...}{Additional arguments passed to \code{write_FVS_files()} to control the
 simulation. See \code{\link[=write_FVS_files]{write_FVS_files()}}.}
 
 \item{verbose}{If TRUE, report the names of the summary table and the number
 of rows in each year.}
 }
 \value{
-A list of two. \verb{$tree_list} is the combined tree list from year 0 and
-the final simulation year; \verb{$summary} is the FVS summary table.
+A list of two. \verb{$tree_list} is the combined tree list from year 0
+and the final simulation year; \verb{$summary} is the FVS summary table.
 }
 \description{
 When used with no additional arguments, runs FVS with these
@@ -34,9 +36,9 @@ default parameters:
 \item Self-calibration turned ON (use \code{calibrate = FALSE} to disable)
 \item Tripling turned off (use \code{triple = TRUE} to turn on)
 \item Regeneration turned off (use \code{add_regen = TRUE } to turn on).
-}
 
 See \code{\link[=write_FVS_files]{write_FVS_files()}} for details on additional arguments to control the
 simulation. Currently only supports reporting after the first cycle. Future
 development to expand this functionality.
+}
 }

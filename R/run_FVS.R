@@ -1,28 +1,30 @@
 #' Run FVS-IE.
 #'
 #' @description When used with no additional arguments, runs FVS with these
-#' default parameters:
+#'   default parameters:
 #' *  100 years (modify with `proj_len`)
 #' * Self-calibration turned ON (use `calibrate = FALSE` to disable)
 #' * Tripling turned off (use `triple = TRUE` to turn on)
 #' * Regeneration turned off (use `add_regen = TRUE ` to turn on).
 #'
-#' See [write_FVS_files()] for details on additional arguments to control the
-#' simulation. Currently only supports reporting after the first cycle. Future
-#' development to expand this functionality.
+#'   See [write_FVS_files()] for details on additional arguments to control the
+#'   simulation. Currently only supports reporting after the first cycle. Future
+#'   development to expand this functionality.
 #'
-#' @param stand_info Stand information for the single stand corresponding to
-#'   `tree_list`.
-#' @param tree_list Tree list.
+#' @param stand_info Dataframe. Stand information for the single stand
+#'   corresponding to `tree_list`. To view required columns, see
+#'   [get_stand_columns()].
+#' @param tree_list Dataframe. List of all trees in the current stand. To view
+#'   required columns, see [get_tree_columns()].
 #' @param out_dir Directory to write keyword, tree, and .out files to.
 #' @param fvs_bin FVS software location.
-#' @param ... Additional arguments passed to `write_FVS_files()` to control
+#' @param ... Additional arguments passed to `write_FVS_files()` to control the
 #'   simulation. See [write_FVS_files()].
 #' @param verbose If TRUE, report the names of the summary table and the number
 #'   of rows in each year.
 #'
-#' @returns A list of two. `$tree_list` is the combined tree list from year 0 and
-#'   the final simulation year; `$summary` is the FVS summary table.
+#' @returns A list of two. `$tree_list` is the combined tree list from year 0
+#'   and the final simulation year; `$summary` is the FVS summary table.
 #' @export
 
 run_FVS <- function(stand_info, tree_list, out_dir, fvs_bin, ..., verbose = FALSE){
@@ -33,42 +35,66 @@ run_FVS <- function(stand_info, tree_list, out_dir, fvs_bin, ..., verbose = FALS
     stop('FVSie.dll not found in ', fvs_bin, '. Check FVS installation.')
   }
 
+  # check for FVS-required columns
+  check_cols(stand_info, fvs_stand_cols)
+  check_cols(tree_list, fvs_tree_cols)
+
+
+  # add in required tree list columns
   tr <- as.data.frame(tree_list[tree_list$STAND_CN == stand_info$STAND_CN,])
   if(!('fvs.TREE_ID' %in% colnames(tr))){
     tr$fvs.TREE_ID <- seq_len(nrow(tr))
   }
+  if(!('CRcode' %in% colnames(tr))){
+    tr$CRcode <- cut(as.numeric(tr$CRRATIO), breaks = c(0, 11, 21, 31, 41, 51, 61, 71, 81, 100),
+                            labels = FALSE,
+                            right = FALSE,
+                            include.lowest = TRUE)
+  }
+  if(!('TUID' %in% colnames(tr))){
+    tr$TUID <- tr$fvs.TREE_ID
+  }
+
   if(sum(tr$HISTORY %in% 6:9) == nrow(tr)|nrow(tr) == 0){
     message('Skipping stand ', stand_info$STAND_CN, sep = '')
     return(list(tree_list = NULL, summary = NULL))
   }else{
-    rFVS::fvsLoad("FVSie", fvs_bin)
-    f <- write_FVS_files(tree_list = tr, stand_info = stand_info,
-                         out_dir = out_dir, ...)
+    tryCatch(
+      {rFVS::fvsLoad("FVSie", fvs_bin)
+        f <- write_FVS_files(tree_list = tr, stand_info = stand_info,
+                             out_dir = out_dir, ...)
 
-    rFVS::fvsSetCmdLine(paste0('--keywordfile=', f, '.key'))
+        rFVS::fvsSetCmdLine(paste0('--keywordfile=', f, '.key'))
 
-    fvs_output <- rFVS::fvsInteractRun(AfterEM1 = 'rFVSIEtools::fetch_trees()',
-                                       SimEnd = rFVS::fvsGetSummary)
+        fvs_output <- rFVS::fvsInteractRun(AfterEM1 = 'rFVSIEtools::fetch_trees()',
+                                           SimEnd = rFVS::fvsGetSummary)
+      },
+      error = function(cond){
+        message('Failed with message: ')
+        message(messageCondition(cond))
+        rFVS::fvsLoad('FVSie', fvs_bin) # unloads
+        stop()
+      })
 
     if(verbose) print(names(fvs_output))
 
     # year 0 tree list
     tl0 <- dplyr::left_join(fvs_output[[1]]$AfterEM1,
-                            dplyr::select(tr, .data$fvs.TREE_ID, .data$TUID,
-                                          .data$PID),
+                            dplyr::select(tr, .data$fvs.TREE_ID,
+                                          .data$TUID, .data$STAND_CN),
                             by = c('id' = 'fvs.TREE_ID'))
     if(is.null(opt_args$CYCLEAT)||(opt_args$CYCLEAT-stand_info$INV_YEAR) <= 10){
       tl1 <- dplyr::left_join(fvs_output[[2]]$AfterEM1,
-                              dplyr::select(tr, .data$fvs.TREE_ID, .data$TUID,
-                                            .data$PID),
+                              dplyr::select(tr, .data$fvs.TREE_ID,
+                                            .data$TUID, .data$STAND_CN),
                               by = c('id' = 'fvs.TREE_ID'))
     }else{
       # if CYCLEAT is provided, we need
       #> to figure out which list element to get
       elem <- floor((opt_args$CYCLEAT-stand_info$INV_YEAR)/10)+2
       tl1 <- dplyr::left_join(fvs_output[[elem]]$AfterEM1,
-                              dplyr::select(tr, .data$fvs.TREE_ID, .data$TUID,
-                                            .data$PID),
+                              dplyr::select(tr, .data$fvs.TREE_ID,
+                                            .data$TUID, .data$STAND_CN),
                               by = c('id' = 'fvs.TREE_ID'))
     }
 
@@ -76,8 +102,7 @@ run_FVS <- function(stand_info, tree_list, out_dir, fvs_bin, ..., verbose = FALS
 
     tl <- rbind(tl0, tl1)
     plt_summary <- cbind(fvs_output[[length(fvs_output)]],
-                         data.frame(PID = stand_info$PID))
-
+                         data.frame(STAND_CN = as.character(stand_info$STAND_CN)))
     rFVS::fvsLoad('FVSie', fvs_bin)
 
     list(tree_list = tl, summary = plt_summary)

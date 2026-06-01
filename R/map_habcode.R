@@ -68,7 +68,7 @@ map_habcode <- function(pv_code, pv_ref, verbose = FALSE){
   if(verbose&is.null(match)){
     message('No matches found, returning NA')
   }
-  ifelse(is.null(match), NA, as.integer(match))
+  ifelse(is.null(match), as.integer(NA), as.integer(match))
 }
 
 #' Format PV codes to match lookup tables

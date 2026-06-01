@@ -7,6 +7,7 @@
 write_FVS_files(
   tree_list,
   stand_info,
+  out_dir,
   proj_len = 100,
   calibrate = TRUE,
   triple = FALSE,
@@ -14,7 +15,6 @@ write_FVS_files(
   custom_SDI_max = NULL,
   random_seed = NULL,
   STDIDENT = "FVSProjection",
-  out_dir,
   file_prefix = NULL,
   ...
 )
@@ -26,7 +26,9 @@ from get_FIA()}
 \item{stand_info}{Stand data to be run through FVS, e.g., FVS_StandInit
 output from get_FIA()}
 
-\item{proj_len}{How many years ahead should we project?}
+\item{out_dir}{Directory to write files to.}
+
+\item{proj_len}{How many years ahead should we project? Default 100.}
 
 \item{calibrate}{Logical. Should self-calibration be used? Default TRUE.}
 
@@ -39,8 +41,6 @@ output from get_FIA()}
 \item{random_seed}{For replicability. Default 2025. To turn off, set to NULL.}
 
 \item{STDIDENT}{Optional. Stand Identity keyword to pass to FVS.}
-
-\item{out_dir}{Directory to write files to.}
 
 \item{file_prefix}{Optional. If provided, KEY and TRE files with temp names
 will have this prefix.}

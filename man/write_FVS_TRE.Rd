@@ -2,21 +2,20 @@
 % Please edit documentation in R/write_FVS_files.R
 \name{write_FVS_TRE}
 \alias{write_FVS_TRE}
-\title{Writes tree list to .TRE file.}
+\title{Write a tree list dataframe to a .TRE file.}
 \usage{
-write_FVS_TRE(tree_list, stand_info, treefile_name)
+write_FVS_TRE(tree_list, treefile_name)
 }
 \arguments{
-\item{tree_list}{Tree list to write.}
+\item{tree_list}{Dataframe; tree list to write.}
 
-\item{stand_info}{Stand table associated with tree list.}
-
-\item{treefile_name}{Destination for .TRE file.}
+\item{treefile_name}{Character. Destination for .TRE file.}
 }
 \value{
 The tree file name, invisibly.
 }
 \description{
-Writes tree list to .TRE file.
+Given a tree list, write information to a properly formatted
+.TRE file for FVS-IE to use.
 }
 \keyword{internal}
