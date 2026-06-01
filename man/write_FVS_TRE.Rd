@@ -4,30 +4,18 @@
 \alias{write_FVS_TRE}
 \title{Write a tree list dataframe to a .TRE file.}
 \usage{
-write_FVS_TRE(tree_list, stand_info, treefile_name)
+write_FVS_TRE(tree_list, treefile_name)
 }
 \arguments{
 \item{tree_list}{Dataframe; tree list to write.}
 
-\item{stand_info}{Stand table associated with tree list.}
-
-\item{treefile_name}{Destination for .TRE file.}
+\item{treefile_name}{Character. Destination for .TRE file.}
 }
 \value{
 The tree file name, invisibly.
 }
 \description{
-Before writing the treelist to a .TRE file, this function first
-attempts to (cheaply) fill in missing values with stand information or
-appropriate defaults. This includes matching PV Code/PV Ref code
-combinations to FVS habitat type code (unless the tree list already has a
-column named \code{FVS_HAB}).
-
-Cheaply filling in missing values requires that column names match default
-expectations, so if this first attempt fails, the more expensive
-\code{\link[=set_tree_cols]{set_tree_cols()}} is called to fill in default values, then any missing
-values are filled in from stand information if available. PV Code/PV Ref
-Code combinations are automatically mapped to FVS habitat type values (see
-\code{\link[=map_habcode]{map_habcode()}}).
+Given a tree list, write information to a properly formatted
+.TRE file for FVS-IE to use.
 }
 \keyword{internal}

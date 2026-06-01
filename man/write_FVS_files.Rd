@@ -54,9 +54,7 @@ The filename created for .key and .tre files, invisibly.
 \description{
 This function, wrapped in \code{\link[=run_FVS]{run_FVS()}}, writes and saves .key and .tre files
 that FVS-IE uses to initialize and carry out a simulation. Use outside of
-\code{run_FVS()} when diagnostics on these files are needed. If necessary columns
-aren't found in the data, defaults will be filled verbosely; wrap the call in
-\code{suppressMessages()} to ignore messages.
+\code{run_FVS()} when diagnostics on these files are needed.
 }
 \details{
 Optional arguments:
