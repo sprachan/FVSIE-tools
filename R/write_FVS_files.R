@@ -269,6 +269,10 @@ write_FVS_TRE <- function(tree_list, treefile_name){
             "TREEVALUE","PRESCRIPTION",
             "SLOPE","ASPECT","FVS_HAB",
             "TOPOCODE","SITEPREP","AGE")
+  if(!all(cols %in% colnames(tree_list))){
+    stop('Missing required column(s) ',
+         paste(cols[!cols %in% colnames(tree_list)], collapse = ', '))
+  }
   stopifnot('Missing required columns' = all(cols %in% colnames(tree_list)))
 
   fvs_formats <- data.frame(tree_var = cols,
