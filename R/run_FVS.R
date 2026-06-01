@@ -35,14 +35,26 @@ run_FVS <- function(stand_info, tree_list, out_dir, fvs_bin, ..., verbose = FALS
     stop('FVSie.dll not found in ', fvs_bin, '. Check FVS installation.')
   }
 
-  # check for required columns
+  # check for FVS-required columns
   check_cols(stand_info, fvs_stand_cols)
   check_cols(tree_list, fvs_tree_cols)
 
+
+  # add in required tree list columns
   tr <- as.data.frame(tree_list[tree_list$STAND_CN == stand_info$STAND_CN,])
   if(!('fvs.TREE_ID' %in% colnames(tr))){
     tr$fvs.TREE_ID <- seq_len(nrow(tr))
   }
+  if(!('CRcode' %in% colnames(tr))){
+    tr$CRcode <- cut(as.numeric(tr$CRRATIO), breaks = c(0, 11, 21, 31, 41, 51, 61, 71, 81, 100),
+                            labels = FALSE,
+                            right = FALSE,
+                            include.lowest = TRUE)
+  }
+  if(!('TUID' %in% colnames(tr))){
+    tr$TUID <- tr$fvs.TREE_ID
+  }
+
   if(sum(tr$HISTORY %in% 6:9) == nrow(tr)|nrow(tr) == 0){
     message('Skipping stand ', stand_info$STAND_CN, sep = '')
     return(list(tree_list = NULL, summary = NULL))
@@ -68,21 +80,21 @@ run_FVS <- function(stand_info, tree_list, out_dir, fvs_bin, ..., verbose = FALS
 
     # year 0 tree list
     tl0 <- dplyr::left_join(fvs_output[[1]]$AfterEM1,
-                            dplyr::select(tr, .data$fvs.TREE_ID, .data$TUID,
-                                          .data$PID),
+                            dplyr::select(tr, .data$fvs.TREE_ID,
+                                          .data$TUID, .data$STAND_CN),
                             by = c('id' = 'fvs.TREE_ID'))
     if(is.null(opt_args$CYCLEAT)||(opt_args$CYCLEAT-stand_info$INV_YEAR) <= 10){
       tl1 <- dplyr::left_join(fvs_output[[2]]$AfterEM1,
-                              dplyr::select(tr, .data$fvs.TREE_ID, .data$TUID,
-                                            .data$PID),
+                              dplyr::select(tr, .data$fvs.TREE_ID,
+                                            .data$TUID, .data$STAND_CN),
                               by = c('id' = 'fvs.TREE_ID'))
     }else{
       # if CYCLEAT is provided, we need
       #> to figure out which list element to get
       elem <- floor((opt_args$CYCLEAT-stand_info$INV_YEAR)/10)+2
       tl1 <- dplyr::left_join(fvs_output[[elem]]$AfterEM1,
-                              dplyr::select(tr, .data$fvs.TREE_ID, .data$TUID,
-                                            .data$PID),
+                              dplyr::select(tr, .data$fvs.TREE_ID,
+                                            .data$TUID, .data$STAND_CN),
                               by = c('id' = 'fvs.TREE_ID'))
     }
 
@@ -90,8 +102,7 @@ run_FVS <- function(stand_info, tree_list, out_dir, fvs_bin, ..., verbose = FALS
 
     tl <- rbind(tl0, tl1)
     plt_summary <- cbind(fvs_output[[length(fvs_output)]],
-                         data.frame(PID = stand_info$PID))
-
+                         data.frame(STAND_CN = as.character(stand_info$STAND_CN)))
     rFVS::fvsLoad('FVSie', fvs_bin)
 
     list(tree_list = tl, summary = plt_summary)
