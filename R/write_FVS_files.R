@@ -264,7 +264,7 @@ write_FVS_KEY <- function(stand,
 
 write_FVS_TRE <- function(tree_list, treefile_name){
   cols <- c("PLOT_ID","fvs.TREE_ID","TREE_COUNT","HISTORY","SPECIES",
-            "DIAMETER","DG","HT","HTTOPK","HTG","CRRATIO",
+            "DIAMETER","DG","HT","HTTOPK","HTG","CRcode",
             "DAMAGE1","SEVERITY1","DAMAGE2","SEVERITY2","DAMAGE3","SEVERITY3",
             "TREEVALUE","PRESCRIPTION",
             "SLOPE","ASPECT","FVS_HAB",
@@ -307,12 +307,12 @@ write_FVS_TRE <- function(tree_list, treefile_name){
                          tree_list$TREE_COUNT,
                          tree_list$HISTORY,
                          tree_list$SPECIES,
-                         tree_list$DBH,
+                         tree_list$DIAMETER,
                          tree_list$DG,
                          tree_list$HT,
                          tree_list$HTTOPK,
                          tree_list$HTG,
-                         tree_list$CRRATIO,
+                         tree_list$CRcode,
                          tree_list$DAMAGE1,
                          tree_list$SEVERITY1,
                          tree_list$DAMAGE2,
@@ -324,8 +324,8 @@ write_FVS_TRE <- function(tree_list, treefile_name){
                          tree_list$SLOPE,
                          tree_list$ASPECT,
                          tree_list$FVS_HAB,
-                         tree_list$TOPO_CODE,
-                         tree_list$SITE_PREP,
+                         tree_list$TOPOCODE,
+                         tree_list$SITEPREP,
                          tree_list$AGE)
   cat(flat_format, file=treefile_name, sep="\n")
   invisible(treefile_name)
