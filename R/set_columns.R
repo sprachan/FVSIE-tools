@@ -112,12 +112,14 @@ set_stand_cols <- function(stand_info,
     setNames(col_info$required_col) |>
     as.data.frame()
 
-  if(map_habcode){
-    df$FVS_HAB <- mapply(map_habcode,
-                         df$PV_CODE, df$PV_REF_CODE, verbose = map_verbose) |>
-      unname()
-  }else{
-    df$FVS_HAB <- suppressWarnings(as.integer(df$PV_CODE))
+  if(!'FVS_HAB' %in% colnames(stand_info)){
+    if(map_habcode){
+      df$FVS_HAB <- mapply(map_habcode,
+                           df$PV_CODE, df$PV_REF_CODE, verbose = map_verbose) |>
+        unname()
+    }else{
+      df$FVS_HAB <- suppressWarnings(as.integer(df$PV_CODE))
+    }
   }
 
   df$ELEVATION <- ifelse(is.na(df$ELEVATION), df$ELEV_FT/100, df$ELEVATION)
