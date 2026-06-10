@@ -106,7 +106,9 @@ write_FVS_KEY <- function(stand,
   write(t1, file = keyfile_name, append = TRUE)
 
   t1 <- sprintf("STDINFO   %10s%10s%10.1f%10.1f%10.1f%10.0f",
-                stand$FOREST, stand$PV_CODE, stand$AGE, stand$ASPECT, stand$SLOPE, stand$ELEVFT/100)
+                stand$FOREST,
+                ifelse(is.na(stand$FVS_HAB), '', stand$FVS_HAB),
+                stand$AGE, stand$ASPECT, stand$SLOPE, stand$ELEVFT/100)
   write(t1, file = keyfile_name, append = TRUE)
 
   # tree list output file (with no headers = column 3 = -1)
@@ -288,10 +290,11 @@ write_FVS_TRE <- function(tree_list, treefile_name){
   for (var in 1:nrow(fvs_formats)){
     col <- fvs_formats$tree_var[var]
     if(col == 'TREE_COUNT'){
-      dec <- 4-nchar(tree_list$TREE_COUNT) # get number of 0s to put after decimal
-      tree_list$TREE_COUNT <- ifelse(is.na(tree_list$TREE_COUNT),
-                              paste(rep(' ', substring(fvs_formats$format[var],2,2)), collapse = ''),
-                              sprintf(paste0('%8.', dec, 'f'), tree_list$TREE_COUNT))
+      tc <- round(as.numeric(tree_list$TREE_COUNT))
+      dec <- 4-nchar(tc) # get number of 0s to put after decimal
+      tree_list$TREE_COUNT <- ifelse(is.na(tc),
+                                     paste(rep(' ', substring(fvs_formats$format[var],2,2)), collapse = ''),
+                                     sprintf(paste0('%8.', dec, 'f'), tc))
     }else{
       if(!col %in% colnames(tree_list)){
         stop('Missing required column ', col)
