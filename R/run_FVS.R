@@ -54,6 +54,9 @@ run_FVS <- function(stand_info, tree_list, out_dir, fvs_bin, ..., verbose = FALS
   if(!('TUID' %in% colnames(tr))){
     tr$TUID <- tr$fvs.TREE_ID
   }
+  if(!('PID' %in% colnames(tr))){
+    tr$PID <- tr$STAND_CN
+  }
 
   if(sum(tr$HISTORY %in% 6:9) == nrow(tr)|nrow(tr) == 0){
     message('Skipping stand ', stand_info$STAND_CN, sep = '')
@@ -81,12 +84,12 @@ run_FVS <- function(stand_info, tree_list, out_dir, fvs_bin, ..., verbose = FALS
     # year 0 tree list
     tl0 <- dplyr::left_join(fvs_output[[1]]$AfterEM1,
                             dplyr::select(tr, .data$fvs.TREE_ID,
-                                          .data$TUID, .data$STAND_CN),
+                                          .data$TUID, .data$STAND_CN, .data$PID),
                             by = c('id' = 'fvs.TREE_ID'))
     if(is.null(opt_args$CYCLEAT)||(opt_args$CYCLEAT-stand_info$INV_YEAR) <= 10){
       tl1 <- dplyr::left_join(fvs_output[[2]]$AfterEM1,
                               dplyr::select(tr, .data$fvs.TREE_ID,
-                                            .data$TUID, .data$STAND_CN),
+                                            .data$TUID, .data$STAND_CN, .data$PID),
                               by = c('id' = 'fvs.TREE_ID'))
     }else{
       # if CYCLEAT is provided, we need
@@ -94,7 +97,7 @@ run_FVS <- function(stand_info, tree_list, out_dir, fvs_bin, ..., verbose = FALS
       elem <- floor((opt_args$CYCLEAT-stand_info$INV_YEAR)/10)+2
       tl1 <- dplyr::left_join(fvs_output[[elem]]$AfterEM1,
                               dplyr::select(tr, .data$fvs.TREE_ID,
-                                            .data$TUID, .data$STAND_CN),
+                                            .data$TUID, .data$STAND_CN, .data$PID),
                               by = c('id' = 'fvs.TREE_ID'))
     }
 
