@@ -72,6 +72,8 @@ write_FVS_files <- function(tree_list, stand_info, out_dir,
 #' @param random_seed For replicability. Default 2025. To turn off, set to NULL.
 #' @param STDIDENT Optional. Stand Identity keyword to pass to FVS.
 #' @param ... Optional arguments. See details.
+#' @param additionals Additional lines to print to keyword file. These must be
+#'   formatted according to FVS keyword documentation.
 #' @param keyfile_name .key file to write to.
 #'
 #' @keywords internal
@@ -97,6 +99,7 @@ write_FVS_KEY <- function(stand,
                           random_seed,
                           STDIDENT,
                           ...,
+                          additionals = NULL,
                           keyfile_name){
   opt_args <- list(...)
   # stand identification
@@ -171,6 +174,27 @@ write_FVS_KEY <- function(stand,
   if (!calibrate){
     write("NOCALIB", file = keyfile_name, append = TRUE)
     write("NOHTDREG", file = keyfile_name, append = TRUE)
+    t1 <- sprintf('DATABASE  ')
+    write(t1, file = keyfile_name, append = TRUE)
+
+    t1 <- sprintf('DSNOut     ')
+    write(t1, file = keyfile_name, append = TRUE)
+    t1 <- paste0(stringr::str_pad('FVSOut.db', width = 10, side = 'right'),
+                 sprintf('%10s%10s', '', ''))
+    write(t1, file = keyfile_name, append = TRUE)
+
+    t1 <- sprintf('CALBSTDB  ')
+    write(t1, file = keyfile_name, append = TRUE)
+    t1 <- sprintf('INVSTATS   ')
+    write(t1, file = keyfile_name, append = TRUE)
+
+    if(!is.null(additionals)&&grepl('CARB', additionals)){
+      t1 <- sprintf('CARBREDB')
+      write(t1, file = keyfile_name, append = TRUE)
+    }
+
+    t1 <- sprintf('END       ')
+    write(t1, file = keyfile_name, append = TRUE)
   }else{
     # GROWTH keyword:
     #> field 1: measurement method, diam
@@ -201,6 +225,10 @@ write_FVS_KEY <- function(stand,
     t1 <- sprintf('INVSTATS   ')
     write(t1, file = keyfile_name, append = TRUE)
 
+    if(!is.null(additionals)&&grepl('CARB', additionals)){
+      t1 <- sprintf('CARBREDB')
+      write(t1, file = keyfile_name, append = TRUE)
+    }
     t1 <- sprintf('END       ')
     write(t1, file = keyfile_name, append = TRUE)
   }
@@ -265,6 +293,10 @@ write_FVS_KEY <- function(stand,
     }
   }
 
+  # any additional keywords
+  if(!is.null(additionals)){
+   write(additionals, file = keyfile_name, append = TRUE)
+  }
 
   write("PROCESS", file = keyfile_name, append = TRUE)
   write("STOP", file = keyfile_name, append = TRUE)
