@@ -33,7 +33,7 @@
 #'
 #' @returns The filename created for .key and .tre files, invisibly.
 #' @export
-write_FVS_files <- function(tree_list, stand_info, out_dir,
+write_FVS_files <- function(stand_info, tree_list, out_dir,
                             proj_len = 100,
                             calibrate = TRUE, triple = FALSE,
                             add_regen = FALSE, custom_SDI_max = NULL,
@@ -108,10 +108,13 @@ write_FVS_KEY <- function(stand,
   t1 <- sprintf("RANNSEED  %10.0f",random_seed)
   write(t1, file = keyfile_name, append = TRUE)
 
-  t1 <- sprintf("STDINFO   %10s%10s%10.1f%10.1f%10.1f%10.0f",
+  t1 <- sprintf("STDINFO   %10s%10s%10s%10.1f%10.1f%10.0f%10s%10s%10s",
                 stand$FOREST,
                 ifelse(is.na(stand$FVS_HAB), '', stand$FVS_HAB),
-                stand$AGE, stand$ASPECT, stand$SLOPE, stand$ELEVFT/100)
+                ifelse(is.na(stand$AGE), '', stand$AGE),
+                stand$ASPECT, stand$SLOPE, stand$ELEVFT/100,
+                '', ifelse(is.na(stand$ECOREGION), '', stand$ECOREGION),
+                ifelse(is.na(stand$STDORGCD), '', stand$STDORGCD))
   write(t1, file = keyfile_name, append = TRUE)
 
   # tree list output file (with no headers = column 3 = -1)
@@ -127,7 +130,14 @@ write_FVS_KEY <- function(stand,
   write(" ", file = keyfile_name, append = TRUE)
 
   ### sample design
-  t1 <- sprintf("DESIGN          -1.0         0         0%10i         0         0       1.0", stand$NUM_PLOTS)
+  t1 <- sprintf("DESIGN    %10.2f%10.2f%10.2f%10i%10s%10s%10.3f",
+                ifelse(is.na(stand$BASAL_AREA_FACTOR), 40, stand$BASAL_AREA_FACTOR),
+                ifelse(is.na(stand$INV_PLOT_SIZE), 300, stand$INV_PLOT_SIZE),
+                ifelse(is.na(stand$BRK_DBH), 5, stand$BRK_DBH),
+                ifelse(is.na(stand$NUM_PLOTS), 1, stand$NUM_PLOTS),
+                ifelse(is.na(stand$NONSTK_PLOTS), '', stand$NONSTK_PLOTS),
+                ifelse(is.na(stand$SAM_WT), '', stand$SAM_WT),
+                ifelse(is.na(stand$STK_PCNT), 1, stand$STK_PCNT))
   write(t1, file = keyfile_name, append = TRUE)
 
   ### inventory year
