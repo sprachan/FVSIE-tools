@@ -14,6 +14,7 @@ write_FVS_KEY(
   random_seed,
   STDIDENT,
   ...,
+  additionals = NULL,
   keyfile_name
 )
 }
@@ -36,14 +37,17 @@ write_FVS_KEY(
 
 \item{...}{Optional arguments. See details.}
 
+\item{additionals}{Additional lines to print to keyword file. These must be
+formatted according to FVS keyword documentation.}
+
 \item{keyfile_name}{.key file to write to.}
 }
 \value{
 Keyword filename, invisibly.
 }
 \description{
-Given a stand list and FVS projection parameters, writes a keyword file.
-This can then be inspected and passed to run_FVS().
+Given a stand list and FVS projection parameters, writes a keyword file. This
+can then be inspected and passed to run_FVS().
 }
 \details{
 Optional arguments:
@@ -54,7 +58,8 @@ Optional arguments:
 be changed. 0 changes the length for all cycles. TIMEINT$CYCLE_LEN is the
 cycle length to change to.
 \item \code{READCORD}, \code{READCORR}: Vectors of numeric values. Length must be 23 to
-match the number of species in the variant.
+match the number of species in the variant, and the order of species must
+match FVS-IE's species sequence order.
 \item \code{CYCLEAT}: Additional reporting year.
 }
 }

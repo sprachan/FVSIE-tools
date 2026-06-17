@@ -60,8 +60,8 @@ write_FVS_files <- function(tree_list, stand_info, out_dir,
 
 #' Write FVS Keyword File
 #'
-#' Given a stand list and FVS projection parameters, writes a keyword file.
-#' This can then be inspected and passed to run_FVS().
+#' Given a stand list and FVS projection parameters, writes a keyword file. This
+#' can then be inspected and passed to run_FVS().
 #'
 #' @param stand Dataframe. Stand data (for a single stand) for running FVS.
 #' @param proj_len How long, in years, should the projection be? Default 100.
@@ -76,15 +76,15 @@ write_FVS_files <- function(tree_list, stand_info, out_dir,
 #'
 #' @keywords internal
 #'
-#' @details
-#' Optional arguments:
+#' @details Optional arguments:
 #' * `custom_SDI_max`: Dataframe. custom_SDI_max$SP is the species,
-#'  `custom_SDI_max$MaxSDI` is that species' SDI.
+#'   `custom_SDI_max$MaxSDI` is that species' SDI.
 #' * `TIMEINT`: Named list. TIMEINT$CYCLE_NUM is the cycle whose length is to
 #'   be changed. 0 changes the length for all cycles. TIMEINT$CYCLE_LEN is the
 #'   cycle length to change to.
 #' * `READCORD`, `READCORR`: Vectors of numeric values. Length must be 23 to
-#'   match the number of species in the variant.
+#'   match the number of species in the variant, and the order of species must
+#'   match FVS-IE's species sequence order.
 #'  * `CYCLEAT`: Additional reporting year.
 #'
 #' @returns Keyword filename, invisibly.
@@ -210,17 +210,36 @@ write_FVS_KEY <- function(stand,
     t1 <- sprintf('READCORD  ')
     write(t1, file = keyfile_name, append = TRUE)
     # 23 species --> 3 lines of 8 entries
-    cat(opt_args$READCORD, sep = '', fill = 80, file = keyfile_name, append = TRUE)
+    t1 <- do.call(sprintf, c('%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f',
+                             as.list(opt_args$READCORD[1:8])))
+    write(t1, file = keyfile_name, append = TRUE)
+
+    t1 <- do.call(sprintf, c('%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f',
+                             as.list(opt_args$READCORD[9:16])))
+    write(t1, file = keyfile_name, append = TRUE)
+
+
+    t1 <- do.call(sprintf, c('%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10s',
+                             append(as.list(opt_args$READCORD[17:23]), '')))
+    write(t1, file = keyfile_name, append = TRUE)
+
     write(' ', file = keyfile_name, append = TRUE)
   }
 
   if(!is.null(opt_args$READCORR)){
     stopifnot('READCORR must have length 23' = length(opt_args$READCORR) == 23)
-    t1 <- sprintf('READCORR  ')
+    t1 <- do.call(sprintf, c('%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f',
+                             as.list(opt_args$READCORR[1:8])))
     write(t1, file = keyfile_name, append = TRUE)
-    # 23 species --> 3 lines of 8 entries
-    cat(opt_args$READCORR, sep = '', fill = 80, file = keyfile_name, append = TRUE)
-    write(' ', file = keyfile_name, append = TRUE)
+
+    t1 <- do.call(sprintf, c('%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f',
+                             as.list(opt_args$READCORR[9:16])))
+    write(t1, file = keyfile_name, append = TRUE)
+
+
+    t1 <- do.call(sprintf, c('%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10s',
+                             append(as.list(opt_args$READCORR[17:23]), '')))
+    write(t1, file = keyfile_name, append = TRUE)
   }
 
   write('', file = keyfile_name, append = TRUE)
