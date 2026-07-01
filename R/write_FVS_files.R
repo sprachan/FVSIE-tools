@@ -20,6 +20,12 @@
 #' @param STDIDENT Optional. Stand Identity keyword to pass to FVS.
 #' @param ... Additional optional arguments passed to [write_FVS_KEY()]. See
 #'   details.
+#' @param additionals Additional lines (keywords + fields) to print to keyword
+#'   file. These must be formatted according to FVS keyword documentation. See
+#'   examples.
+#' @param estab Additional lines (keyword + fields) to print to keyword file
+#'   following the ESTAB keyword. These must be formatted according to FVS
+#'   keyword documentation.
 #'
 #' @details Optional arguments:
 #' * `custom_SDI_max`: Dataframe. `custom_SDI_max$SP` is the species, `
@@ -58,7 +64,8 @@ write_FVS_files <- function(stand_info, tree_list, out_dir,
                             calibrate = TRUE, triple = FALSE,
                             add_regen = FALSE, custom_SDI_max = NULL,
                             random_seed = NULL, STDIDENT = 'FVSProjection',
-                            file_prefix = NULL, ...){
+                            file_prefix = NULL, ...,
+                            additionals = NULL, estab = NULL){
   stopifnot('Output directory does not exist' = dir.exists(out_dir))
   # generate file names
   if(is.null(file_prefix)){
@@ -73,7 +80,10 @@ write_FVS_files <- function(stand_info, tree_list, out_dir,
   write_FVS_TRE(tree_list, treefile_name = treefile_name)
   write_FVS_KEY(stand = stand_info, proj_len = proj_len, calibrate = calibrate,
                 triple = triple, add_regen = add_regen, custom_SDI_max = custom_SDI_max,
-                random_seed = random_seed, STDIDENT = STDIDENT, ..., keyfile_name = keyfile_name)
+                random_seed = random_seed, STDIDENT = STDIDENT, ...,
+                additionals = additionals,
+                estab = estab,
+                keyfile_name = keyfile_name)
 
   invisible(filename)
 }
@@ -92,8 +102,11 @@ write_FVS_files <- function(stand_info, tree_list, out_dir,
 #' @param random_seed For replicability. Default 2025. To turn off, set to NULL.
 #' @param STDIDENT Optional. Stand Identity keyword to pass to FVS.
 #' @param ... Optional arguments. See details.
-#' @param additionals Additional lines to print to keyword file. These must be
-#'   formatted according to FVS keyword documentation.
+#' @param additionals Additional lines (keywords + fields) to print to keyword
+#'   file. These must be formatted according to FVS keyword documentation.
+#' @param estab Additional lines (keyword + fields) to print to keyword file
+#'   following the ESTAB keyword. These must be formatted according to FVS
+#'   keyword documentation.
 #' @param keyfile_name .key file to write to.
 #'
 #' @keywords internal
@@ -110,6 +123,7 @@ write_FVS_files <- function(stand_info, tree_list, out_dir,
 #'  * `CYCLEAT`: Additional reporting year.
 #'
 #' @returns Keyword filename, invisibly.
+#'
 write_FVS_KEY <- function(stand,
                           proj_len,
                           calibrate,
@@ -120,6 +134,7 @@ write_FVS_KEY <- function(stand,
                           STDIDENT,
                           ...,
                           additionals = NULL,
+                          estab = NULL,
                           keyfile_name){
   opt_args <- list(...)
   # stand identification
@@ -185,10 +200,12 @@ write_FVS_KEY <- function(stand,
   } else {
     write("ESTAB", file = keyfile_name, append = TRUE)
     if(!is.null(random_seed)){
-      t1 <- sprintf("RANNSEED  %10.0f",random_seed)
-      write(t1, file = keyfile_name, append = TRUE)
+      # t1 <- sprintf("RANNSEED  %10.0f",random_seed)
+      # write(t1, file = keyfile_name, append = TRUE)
     }
-    write("NOINGROWTH", file = keyfile_name, append = TRUE)
+    if(!is.null(estab)){
+      write(estab, file = keyfile_name, append = TRUE)
+    }
     write("END", file = keyfile_name, append = TRUE)
   }
 

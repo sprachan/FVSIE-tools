@@ -15,6 +15,7 @@ write_FVS_KEY(
   STDIDENT,
   ...,
   additionals = NULL,
+  estab = NULL,
   keyfile_name
 )
 }
@@ -37,8 +38,12 @@ write_FVS_KEY(
 
 \item{...}{Optional arguments. See details.}
 
-\item{additionals}{Additional lines to print to keyword file. These must be
-formatted according to FVS keyword documentation.}
+\item{additionals}{Additional lines (keywords + fields) to print to keyword
+file. These must be formatted according to FVS keyword documentation.}
+
+\item{estab}{Additional lines (keyword + fields) to print to keyword file
+following the ESTAB keyword. These must be formatted according to FVS
+keyword documentation.}
 
 \item{keyfile_name}{.key file to write to.}
 }

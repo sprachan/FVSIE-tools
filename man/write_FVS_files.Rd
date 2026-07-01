@@ -5,8 +5,8 @@
 \title{Write keyword files and treelist files.}
 \usage{
 write_FVS_files(
-  tree_list,
   stand_info,
+  tree_list,
   out_dir,
   proj_len = 100,
   calibrate = TRUE,
@@ -16,15 +16,17 @@ write_FVS_files(
   random_seed = NULL,
   STDIDENT = "FVSProjection",
   file_prefix = NULL,
-  ...
+  ...,
+  additionals = NULL,
+  estab = NULL
 )
 }
 \arguments{
-\item{tree_list}{Tree list to be run through FVS, e.g., FVS_TreeInit output
-from get_FIA()}
-
 \item{stand_info}{Stand data to be run through FVS, e.g., FVS_StandInit
 output from get_FIA()}
+
+\item{tree_list}{Tree list to be run through FVS, e.g., FVS_TreeInit output
+from get_FIA()}
 
 \item{out_dir}{Directory to write files to.}
 
@@ -47,6 +49,14 @@ will have this prefix.}
 
 \item{...}{Additional optional arguments passed to \code{\link[=write_FVS_KEY]{write_FVS_KEY()}}. See
 details.}
+
+\item{additionals}{Additional lines (keywords + fields) to print to keyword
+file. These must be formatted according to FVS keyword documentation. See
+examples.}
+
+\item{estab}{Additional lines (keyword + fields) to print to keyword file
+following the ESTAB keyword. These must be formatted according to FVS
+keyword documentation.}
 }
 \value{
 The filename created for .key and .tre files, invisibly.
@@ -67,4 +77,25 @@ cycle length to change to.
 match the number of species in the variant.
 \item \code{CYCLEAT}: Additional reporting year.
 }
+}
+\examples{
+clean_stand <- set_stand_cols(ex_stand)
+clean_trees <- set_tree_cols(ex_trees, stand_info = clean_stand)
+out_dir <- tempdir()
+
+# A run with all defaults: 100 years, self-calibration, no tripling, no autoestablishment
+write_FVS_files(clean_stand, clean_trees, out_dir)
+
+# A run with carbon reporting requested using the keyword sequence:
+# FMIN
+# CARBREPT
+# END
+# Carbon results will also be automatically saved to the output database.
+
+carb_key <- paste0('\nFMIN\n','CARBREPT','\n', 'END\n')
+write_FVS_files(clean_stand, clean_trees, out_dir, additionals = carb_key)
+
+# clean-up temp files
+file.remove(list.files(out_dir))
+unlink(out_dir)
 }
