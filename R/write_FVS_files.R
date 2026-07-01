@@ -33,6 +33,26 @@
 #'
 #' @returns The filename created for .key and .tre files, invisibly.
 #' @export
+#' @examples
+#' clean_stand <- set_stand_cols(ex_stand)
+#' clean_trees <- set_tree_cols(ex_trees, stand_info = clean_stand)
+#' out_dir <- tempdir()
+#'
+#' # A run with all defaults: 100 years, self-calibration, no tripling, no autoestablishment
+#' write_FVS_files(clean_stand, clean_trees, out_dir)
+#'
+#' # A run with carbon reporting requested using the keyword sequence:
+#' # FMIN
+#' # CARBREPT
+#' # END
+#' # Carbon results will also be automatically saved to the output database.
+#'
+#' carb_key <- paste0('\nFMIN\n','CARBREPT','\n', 'END\n')
+#' write_FVS_files(clean_stand, clean_trees, out_dir, additionals = carb_key)
+#'
+#' # clean-up temp files
+#' file.remove(list.files(out_dir))
+#' unlink(out_dir)
 write_FVS_files <- function(stand_info, tree_list, out_dir,
                             proj_len = 100,
                             calibrate = TRUE, triple = FALSE,
