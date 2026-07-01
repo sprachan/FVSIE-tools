@@ -30,8 +30,8 @@ fvs_stand_cols <- data.frame(col = c('STAND_CN', 'STANDPLOT_CN',
                                          NA,
                                          0, 5, 38, 3800, NA,
                                          40, 300,
-                                         5, 0, 1,
-                                         9999, 100,
+                                         5, 1, 0,
+                                         '', 100,
                                          0, 10,
                                          0, 5,
                                          5,
@@ -45,6 +45,7 @@ fvs_stand_cols <- data.frame(col = c('STAND_CN', 'STANDPLOT_CN',
   dplyr::mutate(dtype = dplyr::case_when(grepl('ID', col) ~ 'any',
                                          col == 'GROUPS' ~ 'character',
                                          col == 'VARIANT' ~ 'character',
+                                         col == 'SAM_WT' ~ 'character',
                                          .default = 'numeric'))
 fvs_stand_cols$has_default[fvs_stand_cols$default == 9999] <- FALSE
 fvs_stand_cols$alt_col[fvs_stand_cols$col == 'STAND_CN'] <- 'STAND_ID'
