@@ -9,7 +9,6 @@ write_FVS_key(
   file_prefix,
   database,
   STDIDENT = NULL,
-  output_fmt = c("SQLite", "xlsx", "xls"),
   n_years = 100,
   CYCLEAT = NULL,
   calibrate = TRUE,
@@ -40,9 +39,6 @@ SQLite database.}
 \item{STDIDENT}{Optional character string specifying the stand identity.
 Should be NULL (default) for multistand projections; see \emph{THIS WOULD BE A
 GOOD VIGNETTE}}
-
-\item{output_fmt}{A character string indicating the FVS simulation output
-format. One of \code{'SQLite'} (default), \code{'xlsx'}, or '\verb{xls.'}}
 
 \item{n_years}{Integer specifying the number of years into the future to
 project. Default 100.}
@@ -110,7 +106,7 @@ formatting is supported for a variety of keywords; additional keywords may
 be passed but must be formatted according to the \href{https://www.fs.usda.gov/sites/default/files/fvs-keyword.pdf}{FVS Keyword guide}.
 Default simulation parameters (cycle length, number of years, calibration,
 etc) are designed to match the FVS GUI defaults specified in Essential FVS,
-except outputs are automatically written to an external file.
+except outputs are automatically written to a SQLite database.
 
 By default, the keyword file specifies a simulation where:
 \itemize{

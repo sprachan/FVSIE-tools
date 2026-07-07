@@ -7,7 +7,7 @@
 #'   guide](https://www.fs.usda.gov/sites/default/files/fvs-keyword.pdf).
 #'   Default simulation parameters (cycle length, number of years, calibration,
 #'   etc) are designed to match the FVS GUI defaults specified in Essential FVS,
-#'   except outputs are automatically written to an external file.
+#'   except outputs are automatically written to a SQLite database.
 #'
 #'   By default, the keyword file specifies a simulation where:
 #'   * Simulation results are output to a SQLite database called FVSOut.db in the working directory.
@@ -27,8 +27,6 @@
 #' @param STDIDENT Optional character string specifying the stand identity.
 #'   Should be NULL (default) for multistand projections; see *THIS WOULD BE A
 #'   GOOD VIGNETTE*
-#' @param output_fmt A character string indicating the FVS simulation output
-#'   format. One of `'SQLite'` (default), `'xlsx'`, or '`xls.'`
 #' @param n_years Integer specifying the number of years into the future to
 #'   project. Default 100.
 #' @param CYCLEAT Optional integer specifying additional years to add cycles.
@@ -80,7 +78,6 @@ write_FVS_key <- function(out_dir = getwd(),
                           file_prefix,
                           database,
                           STDIDENT = NULL,
-                          output_fmt = c('SQLite', 'xlsx', 'xls'),
                           n_years = 100,
                           CYCLEAT = NULL,
                           calibrate = TRUE,
@@ -104,14 +101,14 @@ write_FVS_key <- function(out_dir = getwd(),
   }
 
   # Output paths
-  out_fmt <- rlang::arg_match(output_fmt)
-  if(out_fmt == 'SQLite'){
-    fvs_output <- file.path(out_dir, 'FVSOut.db')
-  }else{
-    fvs_output <- file.path(out_dir, paste0('FVSOut.', out_fmt))
-  }
+  fvs_output <- file.path(out_dir, 'FVSOut.db')
 
   keyfile_name <- file.path(out_dir, paste0(file_prefix, '.key'))
+  if(file.exists(keyfile_name)){
+    rlang::warn(message = c('x' = paste0('A file already exists at ', keyfile_name, '.'),
+                            'The existing file will be overwritten.'))
+    file.remove(keyfile_name)
+  }
 
   # Fail fast if database not found or tables incorrectly named
   stopifnot('Database file not found; check that it exists' = file.exists(database))
@@ -122,6 +119,18 @@ write_FVS_key <- function(out_dir = getwd(),
     write(sprintf('%10-s', 'STDIDENT'), file = keyfile_name, append = TRUE)
     write(sprintf('%80-s', STDIDENT), file = keyfile_name, append = TRUE)
   }
+
+  # Request tree list output ---------------------------------------------------
+  write(sprintf('%10-s%10i%10s%10i%10i%10s%10s%10i',
+                'TREELIST',
+                0,
+                '',
+                0,
+                0,
+                '',
+                '',
+                1),
+        file = keyfile_name, append = TRUE)
 
   # Database options -----------------------------------------------------------
   write(sprintf('%10-s', 'DATABASE'), file = keyfile_name, append = TRUE)
@@ -157,7 +166,8 @@ write_FVS_key <- function(out_dir = getwd(),
       write(sprintf('%10-s', db_tables), file = keyfile_name, append = TRUE)
     }
   }
-    write(sprintf('%10-s', 'CALBSTDB'), file = keyfile_name, append = TRUE)
+  write(sprintf('%10-s', 'CALBSTDB'), file = keyfile_name, append = TRUE)
+  write(sprintf('%10-s%10i%10i', 'TREELIDB', 2, 0), file = keyfile_name, append = TRUE)
   if(carbon_report){
     write(sprintf('%10-s', 'CARBREDB'), file = keyfile_name, append = TRUE)
   }
@@ -297,7 +307,6 @@ write_FVS_key <- function(out_dir = getwd(),
 #' @details The following named arguments can be passed to the `...` argument (see
 #'   [write_FVS_key()] for details):
 #'
-#'    * `output_fmt`: A character string. Default `'SQLite'`..
 #'    * `n_years`: Integer, default 100.
 #'    * `CYCLEAT`: Optional integer.
 #'    * `calibrate`: Logical, default `TRUE`.
@@ -329,6 +338,7 @@ write_multistand_key <- function(STDIDENTs = NULL, out_dir = getwd(), database,
     conn <- DBI::dbConnect(RSQLite::SQLite(), database)
     STDIDENTs <- dplyr::tbl(conn, 'FVS_StandInit') |>
       dplyr::pull(.data$STAND_ID)
+    DBI::dbDisconnect(conn)
   }
   stopifnot(length(STDIDENTs) > 1)
   stopifnot('Specified output directory does not exist' = dir.exists(out_dir))
@@ -343,13 +353,6 @@ write_multistand_key <- function(STDIDENTs = NULL, out_dir = getwd(), database,
     rlang::warn(message = c('x' = paste0('A file already exists at ', keyfile_name, '.'),
                             'The existing file will be overwritten.'))
     file.remove(keyfile_name)
-  }
-  if(file.exists(file.path(out_dir, paste0('shared_kwds', '.key')))){
-    rlang::warn(message = c('x' = paste0('A file already exists at ',
-                                         file.path(out_dir, paste0('shared_kwds', '.key')),
-                                         '.'),
-                            'The existing file will be overwritten.'))
-    file.remove(file.path(out_dir, paste0('shared_kwds', '.key')))
   }
 
   add_file <- write_FVS_key(STDIDENT = NULL, out_dir = out_dir,

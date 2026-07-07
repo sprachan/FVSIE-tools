@@ -64,7 +64,6 @@ See details for simulation options.
 The following named arguments can be passed to the \code{...} argument (see
 \code{\link[=write_FVS_key]{write_FVS_key()}} for details):
 \itemize{
-\item \code{output_fmt}: A character string. Default \code{'SQLite'}..
 \item \code{n_years}: Integer, default 100.
 \item \code{CYCLEAT}: Optional integer.
 \item \code{calibrate}: Logical, default \code{TRUE}.
