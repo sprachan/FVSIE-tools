@@ -1,133 +1,68 @@
-#' Run FVS-IE.
+#' Run FVS from a database with stand and tree information.
 #'
-#' @description When used with no additional arguments, runs FVS with these
-#'   default parameters:
-#' *  100 years (modify with `proj_len`)
-#' * Self-calibration turned ON (use `calibrate = FALSE` to disable)
-#' * Tripling turned off (use `triple = TRUE` to turn on)
-#' * Regeneration turned off (use `add_regen = TRUE ` to turn on).
+#' @param fvs_bin A character string. File path where the FVS software can be
+#'   found.
+#' @param variant Character string. The two-letter code corresponding to an FVS
+#'   variant. Default is Inland Empire ('ie').
+#' @param keyword_file Character string. Path to the keyword file controlling
+#'   the simulation; include the .key extension. See [write_FVS_key()] for
+#'   keyword file generation.
+#' @param stop_year Optional integer. Year to stop simulation and store
+#'   simulation state.
+#' @param stop_code Optional integer. State of the simulation to store.
+#' @param stop_file Optional character string. Where to store the stand
+#'   variables at the supplied stop point.
+#' @param verbose Logical. Should FVS library loading/unloading be accompanied
+#'   by a message? Default `FALSE`.
 #'
-#'   See [write_FVS_files()] for details on additional arguments to control the
-#'   simulation. Currently only supports reporting after the first cycle. Future
-#'   development to expand this functionality.
-#'
-#' @param stand_info Dataframe. Stand information for the single stand
-#'   corresponding to `tree_list`. To view required columns, see
-#'   [get_stand_columns()].
-#' @param tree_list Dataframe. List of all trees in the current stand. To view
-#'   required columns, see [get_tree_columns()].
-#' @param out_dir Directory to write keyword, tree, and .out files to.
-#' @param fvs_bin FVS software location.
-#' @param ... Additional arguments passed to `write_FVS_files()` to control the
-#'   simulation. See [write_FVS_files()].
-#' @param verbose If TRUE, report the names of the summary table and the number
-#'   of rows in each year.
-#'
-#' @returns A list of two. `$tree_list` is the combined tree list from year 0
-#'   and the final simulation year; `$summary` is the FVS summary table.
+#' @returns The FVS program name (e.g., 'FVSie'), invisibly. Simulation outputs
+#'   are sent to the file specified in the keyword file and to a '.out' file
+#'   (location and prefix specified in keyword file).
 #' @export
+#'
+run_FVS <- function(fvs_bin,
+                    variant=c('ie', 'ak', 'bm', 'ca', 'ci', 'cr', 'cs',
+                              'ec', 'em', 'nc', 'kt', 'ls', 'ne', 'pn',
+                              'sn', 'so', 'tt', 'ut', 'wc', 'ws'),
+                    keyword_file,
+                    stop_year = NULL, stop_code = NULL, stop_file = NULL,
+                    verbose = FALSE){
+  stopifnot('keyword file must not be empty' = nchar(keyword_file) > 0)
+  stopifnot('keyword_file must have a .key suffix' = substr(keyword_file, nchar(keyword_file)-3, nchar(keyword_file)) == '.key')
+  variant <- rlang::arg_match(variant)
+  program <- paste0('FVS', variant)
 
-run_FVS <- function(stand_info, tree_list, out_dir, fvs_bin, ..., verbose = FALSE){
-  opt_args <- list(...)
-  # argument checking
-  stopifnot('Ensure that fvs_bin is a character string' = is.character(fvs_bin))
-  if(!file.exists(file.path(fvs_bin, 'FVSie.dll'))){
-    stop('FVSie.dll not found in ', fvs_bin, '. Check FVS installation.')
-  }
+  # Need to load DLL to access functions for running FVS
+  lib <- load_FVS(program = program, fvs_bin = fvs_bin, verbose = verbose)
 
-  # check for FVS-required columns
-  check_cols(stand_info, fvs_stand_cols)
-  check_cols(tree_list, fvs_tree_cols)
-
-
-  # add in required tree list columns
-  tr <- as.data.frame(tree_list[tree_list$STAND_CN == stand_info$STAND_CN,])
-  if(!('fvs.TREE_ID' %in% colnames(tr))){
-    tr$fvs.TREE_ID <- seq_len(nrow(tr))
-  }
-  if(!('CRcode' %in% colnames(tr))){
-    tr$CRcode <- cut(as.numeric(tr$CRRATIO), breaks = c(0, 11, 21, 31, 41, 51, 61, 71, 81, 100),
-                            labels = FALSE,
-                            right = FALSE,
-                            include.lowest = TRUE)
-  }
-  if(!('TUID' %in% colnames(tr))){
-    tr$TUID <- tr$fvs.TREE_ID
-  }
-  if(!('PID' %in% colnames(tr))){
-    tr$PID <- tr$STAND_CN
-  }
-
-  if(sum(tr$HISTORY %in% 6:9) == nrow(tr)|nrow(tr) == 0){
-    message('Skipping stand ', stand_info$STAND_CN, sep = '')
-    return(list(tree_list = NULL, summary = NULL))
+  if(any(is.null(stop_year), is.null(stop_code))){
+    command <-  paste0(' --keywordfile=', keyword_file)
   }else{
-    tryCatch(
-      {rFVS::fvsLoad("FVSie", fvs_bin)
-        f <- write_FVS_files(tree_list = tr, stand_info = stand_info,
-                             out_dir = out_dir, ...)
-
-        rFVS::fvsSetCmdLine(paste0('--keywordfile=', f, '.key'))
-
-        fvs_output <- rFVS::fvsInteractRun(AfterEM1 = 'rFVSIEtools::fetch_trees()',
-                                           SimEnd = rFVS::fvsGetSummary)
-      },
-      error = function(cond){
-        message('Failed with message: ')
-        message(messageCondition(cond))
-        rFVS::fvsLoad('FVSie', fvs_bin) # unloads
-        stop()
-      })
-
-    if(verbose) print(names(fvs_output))
-
-    # year 0 tree list
-    tl0 <- dplyr::left_join(fvs_output[[1]]$AfterEM1,
-                            dplyr::select(tr, .data$fvs.TREE_ID,
-                                          .data$TUID, .data$STAND_CN, .data$PID),
-                            by = c('id' = 'fvs.TREE_ID'))
-    if(is.null(opt_args$CYCLEAT)||(opt_args$CYCLEAT-stand_info$INV_YEAR) <= 10){
-      tl1 <- dplyr::left_join(fvs_output[[2]]$AfterEM1,
-                              dplyr::select(tr, .data$fvs.TREE_ID,
-                                            .data$TUID, .data$STAND_CN, .data$PID),
-                              by = c('id' = 'fvs.TREE_ID'))
-    }else{
-      # if CYCLEAT is provided, we need
-      #> to figure out which list element to get
-      elem <- floor((opt_args$CYCLEAT-stand_info$INV_YEAR)/10)+2
-      tl1 <- dplyr::left_join(fvs_output[[elem]]$AfterEM1,
-                              dplyr::select(tr, .data$fvs.TREE_ID,
-                                            .data$TUID, .data$STAND_CN, .data$PID),
-                              by = c('id' = 'fvs.TREE_ID'))
-    }
-
-    if(verbose) cat('Year 0 nrow: ', nrow(tl0), '\n Year N nrow: ', nrow(tl1))
-
-    tl <- rbind(tl0, tl1)
-    plt_summary <- cbind(fvs_output[[length(fvs_output)]],
-                         data.frame(STAND_CN = as.character(stand_info$STAND_CN)))
-    rFVS::fvsLoad('FVSie', fvs_bin)
-
-    list(tree_list = tl, summary = plt_summary)
+    cmd_stop <- paste0(stop_code, ',', stop_year,
+                       if(!stop_file == '') paste0(',', stop_file) else '')
+    command <- paste0('--keywordfile=', keyword_file,
+                      '--stoppoint=', cmd_stop)
   }
-}
-#' Get treelist from FVS run.
-#'
-#' Exported only because of a quirk in rFVS.
-#'
-#' @export
 
-fetch_trees <- function(){
-  tree_list <- rFVS::fvsGetTreeAttrs(c("id",
-                                       "plot",
-                                       "age",
-                                       "species",
-                                       "dbh",
-                                       "ht",
-                                       "cratio",
-                                       "tpa",
-                                       "mcuft",
-                                       "bdft"))
-  tree_list$year <- rFVS::fvsGetEventMonitorVariables("year")
-  return(tree_list)
+  # Use tryCatch for error checking to ensure that shared library unloaded
+  #> even if failure occurs early on
+  tryCatch(stopifnot(is.loaded('CfvsSetCmdLine', PACKAGE = lib)),
+           error = function(cond){
+             unload_FVS(program, verbose = verbose)
+             stop('Function CfvsSetCmdLine not found in shared library.')
+           })
+  .C('CfvsSetCmdLine', command, as.integer(nchar(command)), as.integer(0),
+     PACKAGE = lib)
+
+  tryCatch(stopifnot(is.loaded('fvs', PACKAGE = lib)),
+           error = function(cond){
+             unload_FVS(program, verbose = verbose)
+             stop('Function CfvsSetCmdLine not found in shared library.')
+           })
+
+  fvs_return <- 0
+  while(fvs_return == 0){
+    fvs_return <- .Fortran('fvs', as.integer(0), PACKAGE = lib)
+  }
+  unload_FVS(program, verbose = verbose)
 }

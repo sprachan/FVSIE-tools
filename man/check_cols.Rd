@@ -12,7 +12,8 @@ check_cols(user_df, col_df)
 \item{col_df}{Dataframe of columns to check against.}
 }
 \value{
-Error if required columns are missing, otherwise nothing.
+Error if required columns are missing with no defaults and warns if
+there are missing columns that do have default values.
 }
 \description{
 Check for required columns

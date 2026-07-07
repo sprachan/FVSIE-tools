@@ -1,5 +1,5 @@
 Package: rFVSIEtools
-Title: Helpers for Running the Forest Vegetation Simulator-Inland Empire Variant
+Title: Helpers for Running the Forest Vegetation Simulator
 Version: 0.0.0.9000
 Authors@R: 
     person("Sejal", "Prachand", , "sp258446@umconnect.umt.edu", role = c("aut", "cre"))
@@ -13,14 +13,10 @@ Imports:
     DBI,
     dbplyr,
     dplyr,
-    future.apply,
-    future,
     rlang,
     RSQLite,
-    rFVS,
     stringr,
     stats
-Remotes: rFVS=USDAForestService/ForestVegetationSimulator-Interface/rFVS
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

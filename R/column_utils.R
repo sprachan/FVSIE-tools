@@ -4,7 +4,8 @@
 #' @param col_df Dataframe of columns to check against.
 #'
 #' @keywords internal
-#' @returns Error if required columns are missing, otherwise nothing.
+#' @returns Error if required columns are missing with no defaults and warns if
+#'   there are missing columns that do have default values.
 #'
 check_cols <- function(user_df, col_df){
   col_info <- search_cols(user_df, col_df)
@@ -24,8 +25,6 @@ check_cols <- function(user_df, col_df){
                                 '\n See get_stand_columns() and set_stand_cols().'),
                 class = 'fvs_err_def_avail')
 
-  }else{
-    NULL
   }
 }
 
