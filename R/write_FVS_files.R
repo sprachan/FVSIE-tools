@@ -1,437 +1,391 @@
-#' Write keyword files and treelist files.
+#' Write an FVS Keyword file.
 #'
-#' This function, wrapped in [run_FVS()], writes and saves .key and .tre files
-#' that FVS-IE uses to initialize and carry out a simulation. Use outside of
-#' `run_FVS()` when diagnostics on these files are needed.
+#' @description Given simulation parameters and file paths, this function writes
+#'   a .key file that can be used to control an FVS simulation. Automatic
+#'   formatting is supported for a variety of keywords; additional keywords may
+#'   be passed but must be formatted according to the [FVS Keyword
+#'   guide](https://www.fs.usda.gov/sites/default/files/fvs-keyword.pdf).
+#'   Default simulation parameters (cycle length, number of years, calibration,
+#'   etc) are designed to match the FVS GUI defaults specified in Essential FVS,
+#'   except outputs are automatically written to an external file.
 #'
-#' @param tree_list Tree list to be run through FVS, e.g., FVS_TreeInit output
-#'   from get_FIA()
-#' @param stand_info Stand data to be run through FVS, e.g., FVS_StandInit
-#'   output from get_FIA()
-#' @param out_dir Directory to write files to.
-#' @param proj_len How many years ahead should we project? Default 100.
-#' @param calibrate Logical. Should self-calibration be used? Default TRUE.
-#' @param triple Logical. Should tripling be turned on? Default FALSE.
-#' @param add_regen Logical. Should regeneration be modeled? Default FALSE.
-#' @param custom_SDI_max Optional. Maximum stand density index.
-#' @param random_seed For replicability. Default 2025. To turn off, set to NULL.
-#' @param file_prefix Optional. If provided, KEY and TRE files with temp names
-#'   will have this prefix.
-#' @param STDIDENT Optional. Stand Identity keyword to pass to FVS.
-#' @param ... Additional optional arguments passed to [write_FVS_KEY()]. See
-#'   details.
-#' @param additionals Additional lines (keywords + fields) to print to keyword
-#'   file. These must be formatted according to FVS keyword documentation. See
-#'   examples.
-#' @param estab Additional lines (keyword + fields) to print to keyword file
-#'   following the ESTAB keyword. These must be formatted according to FVS
-#'   keyword documentation.
+#'   By default, the keyword file specifies a simulation where:
+#'   * Simulation results are output to a SQLite database called FVSOut.db in the working directory.
+#'   * Cycles are 10 years in length.
+#'   * The simulation is run for 100 years total.
+#'   * Self-calibration is turned ON (see [Essential FVS](https://www.fs.usda.gov/sites/default/files/forest-management/essential-fvs.pdf) section 6.4 for details).
+#'   * Missing heights are dubbed using the height-diameter relationships from the input data.
+#'   * Tripling is turned ON (see [Essential FVS](https://www.fs.usda.gov/sites/default/files/forest-management/essential-fvs.pdf) p. 156 for details).
+#'   * The regeneration establishment model is turned ON (see [Essential FVS](https://www.fs.usda.gov/sites/default/files/forest-management/essential-fvs.pdf) section 5.4 for details).
 #'
-#' @details Optional arguments:
-#' * `custom_SDI_max`: Dataframe. `custom_SDI_max$SP` is the species, `
-#'   `Custom_SDI_max$MaxSDI` is that species' SDI.
-#' * `TIMEINT`: Named list. `TIMEINT$CYCLE_NUM` is the cycle whose length is to
-#'   be changed. 0 changes the length for all cycles. `TIMEINT$CYCLE_LEN` is the
-#'   cycle length to change to.
-#' * `READCORD`, `READCORR`: Vectors of numeric values. Length must be 23 to
-#'   match the number of species in the variant.
-#' * `CYCLEAT`: Additional reporting year.
+#' @param out_dir A character string specifying the directory for the keyword
+#'   file and FVS output. Defaults to working directory.
+#' @param file_prefix A character string giving the keyword file name to go
+#'   before the '.key' extension.
+#' @param database A character string specifying the full file path of the input
+#'   SQLite database.
+#' @param STDIDENT Optional character string specifying the stand identity.
+#'   Should be NULL (default) for multistand projections; see *THIS WOULD BE A
+#'   GOOD VIGNETTE*
+#' @param output_fmt A character string indicating the FVS simulation output
+#'   format. One of `'SQLite'` (default), `'xlsx'`, or '`xls.'`
+#' @param n_years Integer specifying the number of years into the future to
+#'   project. Default 100.
+#' @param CYCLEAT Optional integer specifying additional years to add cycles.
+#'   Useful for getting stand/tree information in specific years.
+#' @param calibrate Logical. Should self-calibration be on (`TRUE`, default) or
+#'   turned off for the simulation (`FALSE`)?
+#' @param htd_reg Logical. Should missing heights be dubbed using heights in the
+#'   data (`TRUE`, default) or using regional defaults (`FALSE`)?
+#' @param triple Logical. Should tree records be split into three identical
+#'   records whose TPA sums to the original tree TPA in order to stabilize
+#'   estimates in small stands (`TRUE`, default) or not (`FALSE`)?
+#' @param add_regen Logical. Should the regeneration/establishment model
+#'   associated with the variant be used (`TRUE`, default) or turned off
+#'   (`FALSE`)?
+#' @param carbon_report Logical. Should the Fire and Fuels extension carbon
+#'   report be generated (`TRUE`) or not (`FALSE`, default)?
+#' @param estab_keywords Optional character vector of keywords to control the
+#'   regeneration/establishment model (see Essential FVS 5.4). Each element in
+#'   the vector (or string if only one keyword is passed) must be formatted
+#'   according to the FVS keyword guide.
+#' @param ffe_keywords Optional character vector of keywords to pass to the Fire
+#'   and Fuels Extension. Each element in the vector (or string if only one
+#'   keyword is passed) must be formatted according to the FVS keyword guide.
+#' @param random_seed Optional odd integer to reseed the random number generator
+#'   for the base FVS model. Useful for reproducible simulation results.
+#' @param db_tables Optional character vector of keywords to request additional
+#'   output tables.
+#' @param READCORD Optional numeric vector of multipliers for the large tree
+#'   diameter growth model. The length and order of the vector must correspond
+#'   to the species in the FVS variant in order for multipliers to apply
+#'   correctly. See Essential FVS 6.5.2.2.
+#' @param READCORH Optional numeric vector of multipliers for the large tree
+#'   height growth model. The length and order of the vector must correspond to
+#'   the species in the FVS variant in order for multipliers to apply correctly.
+#'   See Essential FVS 6.5.2.2.
+#' @param READCORR Optional numeric vector of multipliers for the small tree
+#'   height growth model. The length and order of the vector must correspond to
+#'   the species in the FVS variant in order for multipliers to apply correctly.
+#'   See Essential FVS 6.5.2.2.
+#' @param additionals Optional character vector of additional keywords. Each
+#'   element must be formatted according to the FVS keyword guide.
 #'
-#' @returns The filename created for .key and .tre files, invisibly.
-#' @export
-#' @examples
-#' clean_stand <- set_stand_cols(ex_stand)
-#' clean_trees <- set_tree_cols(ex_trees, stand_info = clean_stand)
-#' out_dir <- tempdir()
+#' @returns The keyword file name, invisibly.
+#' @seealso [format_keyword()] for formatting keywords; [write_multistand_key()]
+#'   for writing a keyword file to run multiple stands with the same simulation
+#'   parameters.
 #'
-#' # A run with all defaults: 100 years, self-calibration, no tripling, no autoestablishment
-#' write_FVS_files(clean_stand, clean_trees, out_dir)
-#'
-#' # A run with carbon reporting requested using the keyword sequence:
-#' # FMIN
-#' # CARBREPT
-#' # END
-#' # Carbon results will also be automatically saved to the output database.
-#'
-#' carb_key <- paste0('\nFMIN\n','CARBREPT','\n', 'END\n')
-#' write_FVS_files(clean_stand, clean_trees, out_dir, additionals = carb_key)
-#'
-#' # clean-up temp files
-#' file.remove(list.files(out_dir))
-#' unlink(out_dir)
-write_FVS_files <- function(stand_info, tree_list, out_dir,
-                            proj_len = 100,
-                            calibrate = TRUE, triple = FALSE,
-                            add_regen = FALSE, custom_SDI_max = NULL,
-                            random_seed = NULL, STDIDENT = 'FVSProjection',
-                            file_prefix = NULL, ...,
-                            additionals = NULL, estab = NULL){
-  stopifnot('Output directory does not exist' = dir.exists(out_dir))
-  # generate file names
-  if(is.null(file_prefix)){
-    filename <- tempfile(tmpdir = out_dir)
+write_FVS_key <- function(out_dir = getwd(),
+                          file_prefix,
+                          database,
+                          STDIDENT = NULL,
+                          output_fmt = c('SQLite', 'xlsx', 'xls'),
+                          n_years = 100,
+                          CYCLEAT = NULL,
+                          calibrate = TRUE,
+                          htd_reg = TRUE,
+                          triple = TRUE,
+                          add_regen = TRUE,
+                          carbon_report = FALSE,
+                          estab_keywords = NULL,
+                          ffe_keywords = NULL,
+                          random_seed = NULL,
+                          db_tables = NULL,
+                          READCORD = NULL,
+                          READCORH = NULL,
+                          READCORR = NULL,
+                          additionals = NULL){
+  stopifnot('Specified output directory does not exist' = dir.exists(out_dir))
+  if(.Platform$OS.type == 'windows'){
+    out_dir <- normalizePath(out_dir, winslash = '/')
   }else{
-    filename <- file.path(out_dir, file_prefix)
+    out_dir <- normalizePath(out_dir)
   }
 
-  keyfile_name <- paste0(filename, ".key")
-  treefile_name <- paste0(filename, ".tre")
-
-  write_FVS_TRE(tree_list, treefile_name = treefile_name)
-  write_FVS_KEY(stand = stand_info, proj_len = proj_len, calibrate = calibrate,
-                triple = triple, add_regen = add_regen, custom_SDI_max = custom_SDI_max,
-                random_seed = random_seed, STDIDENT = STDIDENT, ...,
-                additionals = additionals,
-                estab = estab,
-                keyfile_name = keyfile_name)
-
-  invisible(filename)
-}
-
-#' Write FVS Keyword File
-#'
-#' Given a stand list and FVS projection parameters, writes a keyword file. This
-#' can then be inspected and passed to run_FVS().
-#'
-#' @param stand Dataframe. Stand data (for a single stand) for running FVS.
-#' @param proj_len How long, in years, should the projection be? Default 100.
-#' @param calibrate Logical. Should self-calibration be used? Default TRUE.
-#' @param triple Logical. Should tripling be turned on? Default FALSE.
-#' @param add_regen Logical. Should regeneration be modeled? Default FALSE.
-#' @param custom_SDI_max Optional. Maximum stand density index. See details.
-#' @param random_seed For replicability. Default 2025. To turn off, set to NULL.
-#' @param STDIDENT Optional. Stand Identity keyword to pass to FVS.
-#' @param ... Optional arguments. See details.
-#' @param additionals Additional lines (keywords + fields) to print to keyword
-#'   file. These must be formatted according to FVS keyword documentation.
-#' @param estab Additional lines (keyword + fields) to print to keyword file
-#'   following the ESTAB keyword. These must be formatted according to FVS
-#'   keyword documentation.
-#' @param keyfile_name .key file to write to.
-#'
-#' @keywords internal
-#'
-#' @details Optional arguments:
-#' * `custom_SDI_max`: Dataframe. custom_SDI_max$SP is the species,
-#'   `custom_SDI_max$MaxSDI` is that species' SDI.
-#' * `TIMEINT`: Named list. TIMEINT$CYCLE_NUM is the cycle whose length is to
-#'   be changed. 0 changes the length for all cycles. TIMEINT$CYCLE_LEN is the
-#'   cycle length to change to.
-#' * `READCORD`, `READCORR`: Vectors of numeric values. Length must be 23 to
-#'   match the number of species in the variant, and the order of species must
-#'   match FVS-IE's species sequence order.
-#'  * `CYCLEAT`: Additional reporting year.
-#'
-#' @returns Keyword filename, invisibly.
-#'
-write_FVS_KEY <- function(stand,
-                          proj_len,
-                          calibrate,
-                          triple,
-                          add_regen,
-                          custom_SDI_max,
-                          random_seed,
-                          STDIDENT,
-                          ...,
-                          additionals = NULL,
-                          estab = NULL,
-                          keyfile_name){
-  opt_args <- list(...)
-  # stand identification
-  write("STDIDENT", file = keyfile_name, append = TRUE)
-  write(STDIDENT,  file = keyfile_name, append = TRUE)
-  t1 <- sprintf("RANNSEED  %10.0f",random_seed)
-  write(t1, file = keyfile_name, append = TRUE)
-
-  t1 <- sprintf("STDINFO   %10s%10s%10s%10.1f%10.1f%10.0f%10s%10s%10s",
-                stand$FOREST,
-                ifelse(is.na(stand$FVS_HAB), '', stand$FVS_HAB),
-                ifelse(is.na(stand$AGE), '', stand$AGE),
-                stand$ASPECT, stand$SLOPE, stand$ELEVFT/100,
-                '', ifelse(is.na(stand$ECOREGION), '', stand$ECOREGION),
-                ifelse(is.na(stand$STDORGCD), '', stand$STDORGCD))
-  write(t1, file = keyfile_name, append = TRUE)
-
-  # tree list output file (with no headers = column 3 = -1)
-  t1 <- "TREELIST           0         3         0         0         0         0         0"
-  write(t1, file = keyfile_name, append = TRUE)
-
-  # tree list output file (with headers = column 3 = 0)
-  t1 <- "TREEFMT"
-  t2 <- "(I4,I4,F8.3,I1,A3,F5.1,F5.1,2F5.1,F5.1,I1,6I2,2I1,I2,2I3,2I1,F3.0)"   # use FIA species codes
-
-  write(t1, file = keyfile_name, append = TRUE)
-  write(t2, file = keyfile_name, append = TRUE)
-  write(" ", file = keyfile_name, append = TRUE)
-
-  ### sample design
-  t1 <- sprintf("DESIGN    %10.2f%10.2f%10.2f%10i%10s%10s%10.3f",
-                ifelse(is.na(stand$BASAL_AREA_FACTOR), 40, stand$BASAL_AREA_FACTOR),
-                ifelse(is.na(stand$INV_PLOT_SIZE), 300, stand$INV_PLOT_SIZE),
-                ifelse(is.na(stand$BRK_DBH), 5, stand$BRK_DBH),
-                ifelse(is.na(stand$NUM_PLOTS), 1, stand$NUM_PLOTS),
-                ifelse(is.na(stand$NONSTK_PLOTS), '', stand$NONSTK_PLOTS),
-                ifelse(is.na(stand$SAM_WT), '', stand$SAM_WT),
-                ifelse(is.na(stand$STK_PCNT), 1, stand$STK_PCNT))
-  write(t1, file = keyfile_name, append = TRUE)
-
-  ### inventory year
-  t1 <- sprintf("INVYEAR   %10i", stand$INV_YEAR)
-  write(t1, file = keyfile_name, append = TRUE)
-
-
-  if(is.null(opt_args$TIMEINT)){
-    cycle_length <- 10 # default
+  # Output paths
+  out_fmt <- rlang::arg_match(output_fmt)
+  if(out_fmt == 'SQLite'){
+    fvs_output <- file.path(out_dir, 'FVSOut.db')
   }else{
-    cycle_length <- opt_args$TIMEINT$CYCLE_LEN
-    t1 <- sprintf("TIMEINT   %10i %10i", opt_args$TIMEINT$CYCLE_NUM, opt_args$TIMEINT$CYCLE_LEN)
-    write(t1, file = keyfile_name, append = TRUE)
+    fvs_output <- file.path(out_dir, paste0('FVSOut.', out_fmt))
   }
 
+  keyfile_name <- file.path(out_dir, paste0(file_prefix, '.key'))
 
-  ### bar tripling if necessary
-  if (!triple){
-    write("NOTRIPLE", file = keyfile_name, append = TRUE)
+  # Fail fast if database not found or tables incorrectly named
+  stopifnot('Database file not found; check that it exists' = file.exists(database))
+  check_db(database)
+
+  # Write STDIDENT if provided -------------------------------------------------
+  if(!is.null(STDIDENT)){
+    write(sprintf('%10-s', 'STDIDENT'), file = keyfile_name, append = TRUE)
+    write(sprintf('%80-s', STDIDENT), file = keyfile_name, append = TRUE)
   }
 
-  ### ingrowth(regeneration)
-  if (!add_regen){
-    write("NOAUTOES", file = keyfile_name, append = TRUE)
-  } else {
-    write("ESTAB", file = keyfile_name, append = TRUE)
-    if(!is.null(random_seed)){
-      # t1 <- sprintf("RANNSEED  %10.0f",random_seed)
-      # write(t1, file = keyfile_name, append = TRUE)
+  # Database options -----------------------------------------------------------
+  write(sprintf('%10-s', 'DATABASE'), file = keyfile_name, append = TRUE)
+
+  write(sprintf('%10-s', 'DSNOUT'), file = keyfile_name, append = TRUE)
+  write(paste0(fvs_output), file = keyfile_name, append = TRUE)
+
+  write(sprintf('%10-s', 'DSNIN'), file = keyfile_name, append = TRUE)
+  write(paste0(database),
+        file = keyfile_name, append = TRUE)
+
+  # automatically read current stand and tree information from the database
+  write(sprintf('%10-s', 'StandSQL'), file = keyfile_name, append = TRUE)
+  write('SELECT *', file = keyfile_name, append = TRUE)
+  write('FROM FVS_StandInit', file = keyfile_name, append = TRUE)
+  write(paste0('WHERE Stand_ID = ', "'%StandID%'"), file = keyfile_name, append = TRUE)
+  write('EndSQL', file = keyfile_name, append = TRUE)
+
+  write(sprintf('%10-s', 'TreeSQL'), file = keyfile_name, append = TRUE)
+  write('SELECT *', file = keyfile_name, append = TRUE)
+  write('FROM FVS_TreeInit', file = keyfile_name, append = TRUE)
+  write(paste0('WHERE Stand_ID = ', "'%StandID%'"), file = keyfile_name, append = TRUE)
+  write('EndSQL', file = keyfile_name, append = TRUE)
+
+  # request additional tables
+  if(!is.null(db_tables)){
+    if(length(db_tables) > 1){
+      sapply(db_tables, FUN = \(x) write(sprintf('%10-s', x),
+                                         file = keyfile_name,
+                                         append = TRUE),
+             USE.NAMES = FALSE)
+    }else{
+      write(sprintf('%10-s', db_tables), file = keyfile_name, append = TRUE)
     }
-    if(!is.null(estab)){
-      write(estab, file = keyfile_name, append = TRUE)
-    }
-    write("END", file = keyfile_name, append = TRUE)
+  }
+    write(sprintf('%10-s', 'CALBSTDB'), file = keyfile_name, append = TRUE)
+  if(carbon_report){
+    write(sprintf('%10-s', 'CARBREDB'), file = keyfile_name, append = TRUE)
   }
 
-  ### SDI maximum
-  if(!is.null(custom_SDI_max))
-  {
-    j <- sprintf("SDIMAX  %10s%10i", custom_SDI_max$SP, custom_SDI_max$MaxSDI)
-    cat(j, sep = "\n", file = keyfile_name, append = TRUE)
-  }
+  write(sprintf('%10-s', 'END'), file = keyfile_name, append = TRUE)
+  write('', file = keyfile_name, append = TRUE)
 
-  ## calibration
+  # Replication: random seed, tripling -----------------------------------------
+  if(!is.null(random_seed)) write(sprintf('%10-s%10i', 'RANNSEED', random_seed),
+                                  file = keyfile_name, append = TRUE)
+  if(!triple) write(sprintf('%10-s', 'NOTRIPLE'),
+                    file = keyfile_name, append = TRUE)
 
-  if (!calibrate){
-    write("NOCALIB", file = keyfile_name, append = TRUE)
-    write("NOHTDREG", file = keyfile_name, append = TRUE)
-    t1 <- sprintf('DATABASE  ')
-    write(t1, file = keyfile_name, append = TRUE)
-
-    t1 <- sprintf('DSNOut     ')
-    write(t1, file = keyfile_name, append = TRUE)
-    t1 <- paste0(stringr::str_pad('FVSOut.db', width = 10, side = 'right'),
-                 sprintf('%10s%10s', '', ''))
-    write(t1, file = keyfile_name, append = TRUE)
-
-    t1 <- sprintf('CALBSTDB  ')
-    write(t1, file = keyfile_name, append = TRUE)
-    t1 <- sprintf('INVSTATS   ')
-    write(t1, file = keyfile_name, append = TRUE)
-
-    if(!is.null(additionals)&&grepl('CARB', additionals)){
-      t1 <- sprintf('CARBREDB')
-      write(t1, file = keyfile_name, append = TRUE)
-    }
-
-    t1 <- sprintf('END       ')
-    write(t1, file = keyfile_name, append = TRUE)
-  }else{
-    # GROWTH keyword:
-    #> field 1: measurement method, diam
-    #> field 2: length of diameter measurement period
-    #> field 3: measurement method, ht
-    #> field 4: length of height growth measurement period
-    #> field 5: length of mortality observation period
-    t1 <- sprintf("GROWTH    %10.0f%10.0f%10.0f%10.0f%10.0f",
-                  stand$DG_TRANS, stand$DG_MEASURE,
-                  stand$HTG_TRANS, stand$HTG_MEASURE,
-                  stand$MORT_MEASURE)
-    write(t1, file = keyfile_name, append = TRUE)
-
-    # Get calibration statistics in DB
+  # Calibration options --------------------------------------------------------
+  if(!calibrate) write(sprintf('%10-s', 'NOCALIB'),
+                       file = keyfile_name, append = TRUE)
+  if(!htd_reg) write(sprintf('%10-s', 'NOHTDREG'),
+                     file = keyfile_name, append = TRUE)
+  if(!is.null(READCORD)){
+    write(sprintf('%10-s', 'READCORD'), file = keyfile_name, append = TRUE)
+    readcord_fmtd <- sapply(READCORD, \(x) sprintf('%10.2f', x),
+                            USE.NAMES = FALSE)
+    cat(readcord_fmtd, file = keyfile_name, append = TRUE, fill = 80)
     write('', file = keyfile_name, append = TRUE)
-
-    t1 <- sprintf('DATABASE  ')
-    write(t1, file = keyfile_name, append = TRUE)
-
-    t1 <- sprintf('DSNOut     ')
-    write(t1, file = keyfile_name, append = TRUE)
-    t1 <- paste0(stringr::str_pad('FVSOut.db', width = 10, side = 'right'),
-                 sprintf('%10s%10s', '', ''))
-    write(t1, file = keyfile_name, append = TRUE)
-
-    t1 <- sprintf('CALBSTDB  ')
-    write(t1, file = keyfile_name, append = TRUE)
-    t1 <- sprintf('INVSTATS   ')
-    write(t1, file = keyfile_name, append = TRUE)
-
-    if(!is.null(additionals)&&grepl('CARB', additionals)){
-      t1 <- sprintf('CARBREDB')
-      write(t1, file = keyfile_name, append = TRUE)
-    }
-    t1 <- sprintf('END       ')
-    write(t1, file = keyfile_name, append = TRUE)
   }
-
-  if(!is.null(opt_args$READCORD)){
-    stopifnot('READCORD must have length 23' = length(opt_args$READCORD) == 23)
-    t1 <- sprintf('READCORD  ')
-    write(t1, file = keyfile_name, append = TRUE)
-    # 23 species --> 3 lines of 8 entries
-    t1 <- do.call(sprintf, c('%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f',
-                             as.list(opt_args$READCORD[1:8])))
-    write(t1, file = keyfile_name, append = TRUE)
-
-    t1 <- do.call(sprintf, c('%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f',
-                             as.list(opt_args$READCORD[9:16])))
-    write(t1, file = keyfile_name, append = TRUE)
-
-
-    t1 <- do.call(sprintf, c('%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10s',
-                             append(as.list(opt_args$READCORD[17:23]), '')))
-    write(t1, file = keyfile_name, append = TRUE)
-
-    write(' ', file = keyfile_name, append = TRUE)
+  if(!is.null(READCORH)){
+    write(sprintf('%10-s', 'READCORH'), file = keyfile_name, append = TRUE)
+    readcorh_fmtd <- sapply(READCORH, \(x) sprintf('%10.2f', x),
+                            USE.NAMES = FALSE)
+    cat(readcorh_fmtd, file = keyfile_name, append = TRUE, fill = 80)
+    write('', file = keyfile_name, append = TRUE)
   }
-
-  if(!is.null(opt_args$READCORR)){
-    stopifnot('READCORR must have length 23' = length(opt_args$READCORR) == 23)
-    t1 <- do.call(sprintf, c('%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f',
-                             as.list(opt_args$READCORR[1:8])))
-    write(t1, file = keyfile_name, append = TRUE)
-
-    t1 <- do.call(sprintf, c('%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f',
-                             as.list(opt_args$READCORR[9:16])))
-    write(t1, file = keyfile_name, append = TRUE)
-
-
-    t1 <- do.call(sprintf, c('%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10s',
-                             append(as.list(opt_args$READCORR[17:23]), '')))
-    write(t1, file = keyfile_name, append = TRUE)
+  if(!is.null(READCORR)){
+    write(sprintf('%10-s', 'READCORR'), file = keyfile_name, append = TRUE)
+    readcorr_fmtd <- sapply(READCORR, \(x) sprintf('%10.2f', x),
+                            USE.NAMES = FALSE)
+    cat(readcorr_fmtd, file = keyfile_name, append = TRUE, fill = 80)
+    write('', file = keyfile_name, append = TRUE)
   }
 
   write('', file = keyfile_name, append = TRUE)
-
-  # number of cycles
-  cycles <- ifelse(is.null(opt_args$CYCLEAT),
-                   ceiling(proj_len/cycle_length),
-                   ceiling(max(opt_args$CYCLEAT-stand$INV_YEAR, proj_len)/cycle_length))
-
-  t1 <- sprintf("NUMCYCLE  %10i", cycles)
-  write(t1, file = keyfile_name, append = TRUE)
-
-  if(!is.null(opt_args$CYCLEAT)){
-    for(i in seq_along(opt_args$CYCLEAT)){
-      t1 <- sprintf("CYCLEAT   %10i", opt_args$CYCLEAT)
-      write(t1, file = keyfile_name, append = TRUE)
-    }
+  # Regeneration/Establishment options -----------------------------------------
+  if(!add_regen){
+    write("NOAUTOES", file = keyfile_name, append = TRUE)
   }else{
-    for(i in seq_len(cycles)){
-      cycle_year <- stand$INV_YEAR + cycle_length*i
-      t1 <- sprintf('CYCLEAT   %10i', cycle_year)
-      write(t1, file = keyfile_name, append = TRUE)
+    write("ESTAB", file = keyfile_name, append = TRUE)
+    if(length(estab_keywords) >= 1){
+      write(estab_keywords, file = keyfile_name, append = TRUE)
+      write('', file = keyfile_name, append = TRUE)
     }
   }
-
-  # any additional keywords
-  if(!is.null(additionals)){
-   write(additionals, file = keyfile_name, append = TRUE)
+  write("END", file = keyfile_name, append = TRUE)
+  write('', file = keyfile_name, append = TRUE)
+  # Fire and Fuels extension ---------------------------------------------------
+  if(any(carbon_report, !is.null(ffe_keywords))){
+    write(sprintf('%10-s', 'FMIN'), file = keyfile_name, append = TRUE)
+    if(carbon_report){
+      write(sprintf('%10-s', 'CARBREPT'))
+    }
+    if(!is.null(ffe_keywords)){
+      write(ffe_keywords, file = keyfile_name, append = TRUE)
+    }
+    write(sprintf('%10-s', 'END'), file = keyfile_name, append = TRUE)
+    write('', file = keyfile_name, append = TRUE)
+  }
+  # Additional keywords --------------------------------------------------------
+  if(length(additionals) > 1){
+    sapply(additionals, \(x) write(x, file = keyfile_name, append = TRUE),
+           USE.NAMES = FALSE)
+  }else if(length(additionals) == 1){
+    write(additionals, file = keyfile_name, append = TRUE)
+  }
+  write('', file = keyfile_name, append = TRUE)
+  # Simulation length and additional years -------------------------------------
+  if(!any(grepl('TIMEINT', additionals))){
+    cycle_length <- 10
+  }else{
+    cycle_length <- as.integer(substr(additionals[grepl('TIMEINT', additionals)],
+                                      21, 30))
   }
 
-  write("PROCESS", file = keyfile_name, append = TRUE)
-  write("STOP", file = keyfile_name, append = TRUE)
-  invisible(keyfile_name)
+  n_cycles <- ceiling(n_years/cycle_length)
+  write(sprintf('%10-s%10i', 'NUMCYCLE', n_cycles), file = keyfile_name, append = TRUE)
+
+  if(length(CYCLEAT)>1){
+    sapply(CYCLEAT, \(x) write(sprintf('%10-s%10i', 'CYCLEAT', x),
+                               file = keyfile_name, append = TRUE),
+           USE.NAMES = FALSE)
+  }else if(length(CYCLEAT) == 1){
+    write(sprintf('%10-s%10i', 'CYCLEAT', CYCLEAT), file = keyfile_name, append = TRUE)
+  }
+  write('', file = keyfile_name, append = TRUE)
+  # Process if single stand ----------------------------------------------------
+  if(!is.null(STDIDENT)){
+    write("PROCESS", file = keyfile_name, append = TRUE)
+    write("STOP", file = keyfile_name, append = TRUE)
+  }
+  invisible(normalizePath(keyfile_name, winslash = '/'))
 }
 
-#' Write a tree list dataframe to a .TRE file.
+#' Write a keyword file to run multiple stands with the same simulation
+#' parameters
 #'
-#' @description Given a tree list, write information to a properly formatted
-#'   .TRE file for FVS-IE to use.
+#' @description This function writes two .key files: one that defines the
+#'   keywords shared by all simulations ('shared_kwds.key') and one that tells
+#'   FVS to use these keywords to run the stands specified in `STDIDENTs` (or
+#'   all stands in the input database; '<file_prefix>.key'). Default shared
+#'   simulation parameters match those in the FVS GUI except outputs are
+#'   automatically written to an external file.
 #'
-#' @param tree_list Dataframe; tree list to write.
-#' @param treefile_name Character. Destination for .TRE file.
+#'   By default, the shared keyword file specifies a simulation where:
+#'   * Simulation results are output to a SQLite database called FVSOut.db in the working directory.
+#'   * Cycles are 10 years in length.
+#'   * The simulation is run for 100 years total.
+#'   * Self-calibration is turned ON (see [Essential FVS](https://www.fs.usda.gov/sites/default/files/forest-management/essential-fvs.pdf) section 6.4 for details).
+#'   * Missing heights are dubbed using the height-diameter relationships from the input data.
+#'   * Tripling is turned ON (see [Essential FVS](https://www.fs.usda.gov/sites/default/files/forest-management/essential-fvs.pdf) p. 156 for details).
+#'   * The regeneration establishment model is turned ON (see [Essential FVS](https://www.fs.usda.gov/sites/default/files/forest-management/essential-fvs.pdf) section 5.4 for details).
 #'
+#'   See details for simulation options.
+#'
+#' @param STDIDENTs Optional character vector of stand identifiers specifying
+#'   the stands to be run in the simulation. If not provided, all STAND_ID
+#'   values in the stand table of the provided database will be used.
+#' @param out_dir A character string specifying the directory for the keyword
+#'   file and FVS output. Defaults to working directory.
+#' @param database A character string specifying the full file path of the input
+#'   SQLite database.
+#' @param file_prefix An optional character string giving the keyword file name
+#'   to go before the '.key' extension. Default for multistand runs is
+#'   'all_stands'.
+#' @param addfile_ref Optional integer file reference number, for FVS use. See
+#'   FVS keyword documentation for the ADDFILE keyword. Must be at least 31;
+#'   default is 40.
+#' @param ... Parameters passed to [write_FVS_key()]. See details.
+#'
+#' @details The following named arguments can be passed to the `...` argument (see
+#'   [write_FVS_key()] for details):
+#'
+#'    * `output_fmt`: A character string. Default `'SQLite'`..
+#'    * `n_years`: Integer, default 100.
+#'    * `CYCLEAT`: Optional integer.
+#'    * `calibrate`: Logical, default `TRUE`.
+#'    * `htd_reg`: Logical, default `TRUE`.
+#'    * `triple`: Logical, default `TRUE`.
+#'    * `add_regen`:  Logical, default `TRUE`.
+#'    * `carbon_report`: Logical, default `FALSE`.
+#'    * `estab_keywords`: Optional character vector of keywords.
+#'    * `ffe_keywords`: Optional character vector of keywords.
+#'    * `random_seed`: Optional odd integer.
+#'    * `db_tables`: Optional character vector.
+#'    * `READCORD`, `READCORH`, `READCORR`: Optional numeric vectors.
+#'    * `READCORH`: Optional numeric vector.
+#'    * `additionals`: Optional character vector.
+#'
+#'
+#'
+#' @returns The name of the keyword file that runs all requested stands,
+#'   invisibly.
+#' @export
+#' @seealso [write_FVS_key()]
+
+write_multistand_key <- function(STDIDENTs = NULL, out_dir = getwd(), database,
+                                 file_prefix = 'all_stands', addfile_ref = 40,
+                                 ...){
+  check_db(database)
+  stopifnot(addfile_ref > 30)
+  if(is.null(STDIDENTs)){
+    conn <- DBI::dbConnect(RSQLite::SQLite(), database)
+    STDIDENTs <- dplyr::tbl(conn, 'FVS_StandInit') |>
+      dplyr::pull(.data$STAND_ID)
+  }
+  stopifnot(length(STDIDENTs) > 1)
+  stopifnot('Specified output directory does not exist' = dir.exists(out_dir))
+  if(.Platform$OS.type == 'windows'){
+    out_dir <- normalizePath(out_dir, winslash = '/')
+  }else{
+    out_dir <- normalizePath(out_dir)
+  }
+
+  keyfile_name <- file.path(out_dir, paste0(file_prefix, '.key'))
+  if(file.exists(keyfile_name)){
+    rlang::warn(message = c('x' = paste0('A file already exists at ', keyfile_name, '.'),
+                            'The existing file will be overwritten.'))
+    file.remove(keyfile_name)
+  }
+  if(file.exists(file.path(out_dir, paste0('shared_kwds', '.key')))){
+    rlang::warn(message = c('x' = paste0('A file already exists at ',
+                                         file.path(out_dir, paste0('shared_kwds', '.key')),
+                                         '.'),
+                            'The existing file will be overwritten.'))
+    file.remove(file.path(out_dir, paste0('shared_kwds', '.key')))
+  }
+
+  add_file <- write_FVS_key(STDIDENT = NULL, out_dir = out_dir,
+                            file_prefix = 'shared_kwds', database = database, ...)
+
+  for(st in STDIDENTs){
+    write(sprintf('%10-s', 'STDIDENT'), file = keyfile_name, append = TRUE)
+    write(sprintf('%80-s', st), file = keyfile_name, append = TRUE)
+
+    # include shared keywords
+    write(sprintf('%10-s%10i', 'OPEN', addfile_ref), file = keyfile_name, append = TRUE)
+    write(sprintf('%10s', add_file), file = keyfile_name, append = TRUE)
+    write(sprintf('%10-s%10i', 'ADDFILE', addfile_ref), file = keyfile_name, append = TRUE)
+    write(sprintf('%10-s%10i', 'CLOSE', addfile_ref), file = keyfile_name, append = TRUE)
+
+    write(sprintf('%10-s', 'PROCESS'), file = keyfile_name, append = TRUE)
+    write('', file = keyfile_name, append = TRUE)
+  }
+  write('STOP', file = keyfile_name, append = TRUE)
+  invisible(normalizePath(keyfile_name, winslash = '/'))
+}
+
+#' Helper function to check database validity for running FVS
+#'
+#' @param database Character string. File path to the SQLite input database.
+#'
+#' @returns Nothing. Errors if FVS_StandInit and/or FVS_TreeInit not found in
+#'   the database.
 #' @keywords internal
-#'
-#' @returns The tree file name, invisibly.
+check_db <- function(database){
+  conn <- DBI::dbConnect(RSQLite::SQLite(), database)
+  stopifnot('Stand table must be named FVS_StandInit' =
+              'FVS_StandInit' %in% DBI::dbListTables(conn))
+  stopifnot('Tree table must be named FVS_TreeInit' =
+              'FVS_TreeInit' %in% DBI::dbListTables(conn))
 
-write_FVS_TRE <- function(tree_list, treefile_name){
-  cols <- c("PLOT_ID","fvs.TREE_ID","TREE_COUNT","HISTORY","SPECIES",
-            "DIAMETER","DG","HT","HTTOPK","HTG","CRcode",
-            "DAMAGE1","SEVERITY1","DAMAGE2","SEVERITY2","DAMAGE3","SEVERITY3",
-            "TREEVALUE","PRESCRIPTION",
-            "SLOPE","ASPECT","FVS_HAB",
-            "TOPOCODE","SITEPREP","AGE")
-  if(!all(cols %in% colnames(tree_list))){
-    stop('Missing required column(s) ',
-         paste(cols[!cols %in% colnames(tree_list)], collapse = ', '))
-  }
-  stopifnot('Missing required columns' = all(cols %in% colnames(tree_list)))
-
-  fvs_formats <- data.frame(tree_var = cols,
-                            format = c("%4.0f","%4.0f","%8.3f","%1.0f","%3s",
-                                       "%5.1f","%5.1f","%5.1f","%5.1f","%5.1f","%1.0f",
-                                       "%2.0f","%2.0f","%2.0f","%2.0f","%2.0f","%2.0f",
-                                       "%1.0f","%1.0f",
-                                       "%2.0f","%3.0f","%3.0f",
-                                       "%1.0f","%1.0f","%3.0f"))
-  fvs_formats$txt_format <- with(fvs_formats,paste(substring(format,1,2),"s",sep = ""))
-
-  # replace NAs with appropriate width whitespace, or write formatted value
-  for (var in 1:nrow(fvs_formats)){
-    col <- fvs_formats$tree_var[var]
-    if(col == 'TREE_COUNT'){
-      tc <- round(as.numeric(tree_list$TREE_COUNT))
-      dec <- 4-nchar(tc) # get number of 0s to put after decimal
-      tree_list$TREE_COUNT <- ifelse(is.na(tc),
-                                     paste(rep(' ', substring(fvs_formats$format[var],2,2)), collapse = ''),
-                                     sprintf(paste0('%8.', dec, 'f'), tc))
-    }else{
-      if(!col %in% colnames(tree_list)){
-        stop('Missing required column ', col)
-      }
-      tree_list[,col] <- ifelse(is.na(tree_list[,col]),
-                                               paste(rep(" ",substring(fvs_formats$format[var],2,2)),collapse=""),
-                                               sprintf(fvs_formats$format[var],tree_list[,col]))
-    }
-  }
-  tree_list$SPECIES <- ifelse(as.numeric(tree_list$SPECIES)<100,
-                       paste("0",as.numeric(tree_list$SPECIES),sep=""),tree_list$SPECIES)
-
-  # write text file
-  flat_format <- sprintf(paste(fvs_formats$txt_format, collapse = ""),
-                         tree_list$PLOT_ID,
-                         tree_list$fvs.TREE_ID,
-                         tree_list$TREE_COUNT,
-                         tree_list$HISTORY,
-                         tree_list$SPECIES,
-                         tree_list$DIAMETER,
-                         tree_list$DG,
-                         tree_list$HT,
-                         tree_list$HTTOPK,
-                         tree_list$HTG,
-                         tree_list$CRcode,
-                         tree_list$DAMAGE1,
-                         tree_list$SEVERITY1,
-                         tree_list$DAMAGE2,
-                         tree_list$SEVERITY2,
-                         tree_list$DAMAGE3,
-                         tree_list$SEVERITY3,
-                         tree_list$TREEVALUE,
-                         tree_list$PRESCRIPTION,
-                         tree_list$SLOPE,
-                         tree_list$ASPECT,
-                         tree_list$FVS_HAB,
-                         tree_list$TOPOCODE,
-                         tree_list$SITEPREP,
-                         tree_list$AGE)
-  cat(flat_format, file=treefile_name, sep="\n")
-  invisible(treefile_name)
+  # ensure that database is disconnected regardless of error status
+  on.exit(DBI::dbDisconnect(conn))
 }
