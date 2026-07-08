@@ -1,0 +1,112 @@
+# Get FVS-ready FIA data from a state-level database
+
+`get_FIA_state()` fetches FVS Stand and FVS Tree tables from a
+downloaded state-level FIA database (from the [FIA datamart
+website](https://apps.fs.usda.gov/fia/datamart/datamart.html)). Note
+that these tables are only available at the state-level, so this
+function only works with state-level databases.
+
+`fetch_cond()` is a convenience function for fetching subsets of COND
+tables for use with `get_FIA_state()`.
+
+## Usage
+
+``` r
+get_FIA_state(
+  db_loc,
+  fia_cond_subset,
+  verbose = FALSE,
+  add_identifiers = FALSE
+)
+
+fetch_cond(db_loc, filter_statements)
+```
+
+## Arguments
+
+- db_loc:
+
+  Character string. Location for the FIA database.
+
+- fia_cond_subset:
+
+  Dataframe. A subset of an FIA COND table.
+
+- verbose:
+
+  Boolean value. If TRUE, will print SQL queries to console.
+
+- add_identifiers:
+
+  Boolean value. If TRUE, will add a PID (Plot IDentifier) column to the
+  stand table and a TUID (Tree Unique IDentifier) column to the tree
+  table. PID and TUID are unique, persistent identifiers. They uniquely
+  identify each FIA plot and each tree in each plot. Unlike FIA-provided
+  identifiers, these stay the same across all years.
+
+- filter_statements:
+
+  Character string of dplyr-style filter statements. Column names in the
+  filter_statements arguments must match columns in the COND table from
+  the [NFI
+  database](https://research.fs.usda.gov/sites/default/files/2025-08/wo-v9-4_Aug2025_UG_FIADB_database_description_NFI.pdf).
+  See examples.
+
+## Value
+
+`get_FIA_state()`: List of 2. \$FVS_StandInit is a dataframe of the
+stand information. \$FVS_TreeInit is a dataframe of all tree
+measurements. A single stand from this list selected with STAND_CN and
+the associated tree list (matching STAND_CN) can be passed to
+[`run_FVS()`](https://sprachan.github.io/FVSIE-tools/reference/run_FVS.md).
+
+`fetch_cond()`: COND data frame for use as a filter for
+`get_FIA_state()`.
+
+## Examples
+
+``` r
+
+db_loc <- system.file('extdata', 'dummy_fia.db', package = 'rFVSIEtools')
+cond <- fetch_cond(db_loc, 'STATECD == 30, INVYR >= 2001')
+get_FIA_state(db_loc, cond)
+#> $FVS_StandInit
+#> # A tibble: 5 × 35
+#>   STAND_CN  STAND_ID VARIANT STATE INV_DAY INV_YEAR INV_MONTH LATITUDE LONGITUDE
+#>   <chr>     <chr>    <chr>   <dbl>   <dbl>    <dbl>     <dbl>    <dbl>     <dbl>
+#> 1 18876285… 3014029… IE         30      14     2016         8     47.8     -113.
+#> 2 40395300… 3012043… EM         30      16     2014         8     46.0     -112.
+#> 3 40395358… 3012047… IE         30      24     2014         9     47.9     -114.
+#> 4 40395823… 3012063… IE         30      24     2012         5     46.9     -114.
+#> 5 40394253… 3012009… EM         30      17     2014         8     45.1     -108.
+#> # ℹ 26 more variables: REGION <dbl>, FOREST <dbl>, PV_CODE <chr>,
+#> #   ECOREGION <chr>, BASAL_AREA_FACTOR <dbl>, INV_PLOT_SIZE <dbl>,
+#> #   BRK_DBH <dbl>, AGE <dbl>, ASPECT <dbl>, SLOPE <dbl>, TOPO <chr>,
+#> #   ELEVFT <dbl>, NUM_PLOTS <dbl>, MAX_SDI <dbl>, DG_TRANS <dbl>,
+#> #   DG_MEASURE <dbl>, HTG_TRANS <dbl>, HTG_MEASURE <dbl>, MORT_MEASURE <dbl>,
+#> #   SITE_SPECIES <chr>, SITE_INDEX <dbl>, PID <chr>, COUNTYCD <int>,
+#> #   UNITCD <int>, PLOT <int>, OWNCD <int>
+#> 
+#> $FVS_TreeInit
+#> # A tibble: 170 × 32
+#>    STAND_CN     STAND_ID STANDPLOT_ID PLOT_ID PLOT_CN TREE_ID HISTORY TREE_COUNT
+#>    <chr>        <chr>    <chr>          <dbl> <chr>     <dbl>   <dbl>      <dbl>
+#>  1 18876285302… 3014029… 30140298531…       3 188762…       4       1          1
+#>  2 18876285302… 3014029… 30140298531…       3 188762…       1       1          1
+#>  3 18876285302… 3014029… 30140298531…       3 188762…       2       1          1
+#>  4 18876285302… 3014029… 30140298531…       3 188762…       3       1          1
+#>  5 18876285302… 3014029… 30140298531…       3 188762…       5       8          1
+#>  6 18876285302… 3014029… 30140298531…       3 188762…       6       8          1
+#>  7 18876285302… 3014029… 30140298531…       3 188762…       7       1          1
+#>  8 18876285302… 3014029… 30140298531…       3 188762…       8       1          1
+#>  9 18876285302… 3014029… 30140298531…       3 188762…      10       1          1
+#> 10 18876285302… 3014029… 30140298531…       4 188762…       1       1          1
+#> # ℹ 160 more rows
+#> # ℹ 24 more variables: SPECIES <dbl>, DIAMETER <dbl>, DG <dbl>, HT <dbl>,
+#> #   HTTOPK <dbl>, HTG <dbl>, HT_TO_CROWN_BASE <dbl>, CRRATIO <dbl>,
+#> #   DEFECT_CUBIC <dbl>, DEFECT_BOARD <dbl>, DAMAGE1 <dbl>, SEVERITY1 <dbl>,
+#> #   DAMAGE2 <dbl>, SEVERITY2 <dbl>, DAMAGE3 <dbl>, SEVERITY3 <dbl>, AGE <dbl>,
+#> #   BH_YEARS <dbl>, PID <chr>, TUID <chr>, COUNTYCD <int>, UNITCD <int>,
+#> #   PLOT <int>, OWNCD <int>
+#> 
+```
