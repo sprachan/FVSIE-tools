@@ -40,7 +40,7 @@ fvs_stand_cols <- data.frame(col = c('STAND_ID',
                                          NA),
                              has_default = TRUE,
                              alt_col = '') |>
-  dplyr::mutate(dtype = dplyr::case_when(grepl('ID', col) ~ 'any',
+  dplyr::mutate(dtype = dplyr::case_when(grepl('ID', col, fixed = TRUE) ~ 'any',
                                          col == 'GROUPS' ~ 'character',
                                          col == 'VARIANT' ~ 'character',
                                          col == 'SAM_WT' ~ 'character',

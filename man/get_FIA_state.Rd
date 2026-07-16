@@ -6,7 +6,7 @@
 \title{Get FVS-ready FIA data from a state-level database}
 \usage{
 get_FIA_state(
-  db_loc,
+  database,
   fia_cond_subset,
   verbose = FALSE,
   add_identifiers = FALSE
@@ -15,13 +15,15 @@ get_FIA_state(
 fetch_cond(db_loc, filter_statements)
 }
 \arguments{
-\item{db_loc}{Character string. Location for the FIA database.}
+\item{database}{Character string. Location for the FIA database.}
 
 \item{fia_cond_subset}{Dataframe. A subset of an FIA COND table.}
 
 \item{verbose}{Boolean value. If TRUE, will print SQL queries to console.}
 
 \item{add_identifiers}{Boolean value. If TRUE, will add a PID (Plot IDentifier) column to the stand table and a TUID (Tree Unique IDentifier) column to the tree table. PID and TUID are unique, persistent identifiers. They uniquely identify each FIA plot and each tree in each plot. Unlike FIA-provided identifiers, these stay the same across all years.}
+
+\item{db_loc}{Character string. Location for the FIA database.}
 
 \item{filter_statements}{Character string of dplyr-style filter statements.
 Column names in the filter_statements arguments must match columns in the
@@ -42,8 +44,8 @@ this function only works with state-level databases.
 }
 \examples{
 
-db_loc <- system.file('extdata', 'dummy_fia.db', package = 'rFVSIEtools')
-cond <- fetch_cond(db_loc, 'STATECD == 30, INVYR >= 2001')
-get_FIA_state(db_loc, cond)
+database <- system.file('extdata', 'dummy_fia.db', package = 'rFVSIEtools')
+cond <- fetch_cond(database, 'STATECD == 30, INVYR >= 2001')
+get_FIA_state(database, cond)
 
 }

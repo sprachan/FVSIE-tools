@@ -51,5 +51,6 @@ load_FVS('FVSie', fvs_bin = 'C:/FVS/FVSSoftware/FVSbin')
 #> FVSie already loaded.
 
 unload_FVS(program = 'FVSie')
-#> FVSie unloaded.}
+#> FVSie unloaded.
+}
 }

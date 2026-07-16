@@ -16,8 +16,7 @@ run_FVS(
 )
 }
 \arguments{
-\item{fvs_bin}{A character string. File path where the FVS software can be
-found.}
+\item{fvs_bin}{Character string. The file path where FVS DLLs are located.}
 
 \item{variant}{Character string. The two-letter code corresponding to an FVS
 variant. Default is Inland Empire ('ie').}
@@ -44,4 +43,16 @@ are sent to the file specified in the keyword file and to a '.out' file
 }
 \description{
 Run FVS from a database with stand and tree information.
+}
+\examples{
+out_dir <- tempdir()
+database <- system.file(file.path('extdata', 'ex_data.db'), package = 'rFVSIEtools')
+kwd <- write_FVS_key(out_dir = out_dir, file_prefix = 'example_kwd', database = database)
+
+\dontrun{
+run_FVS(fvs_bin = 'C:/FVS/FVSSoftware/FVSbin',
+variant = 'ie',
+keyword_file = kwd)
+}
+
 }

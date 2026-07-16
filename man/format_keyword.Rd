@@ -28,24 +28,20 @@ Add whitespace and use optional datatypes to format an FVS keyword to match
 requirements. To format READCORD/READCORR/READCORH values, see (...)
 }
 \examples{
-#' format_keyword('NOINGROW')
-#> "NOINGROW  "
+format_keyword('NOINGROW')
 
 format_keyword('SDICALC', 0, 1, 1)
-#> "SDICALC            0         1         1"
 
-# Lower case will be converted to upper case and any spaces will be removed in the keyword:
+# Lower case will be converted to upper case,
+#  and any spaces will be removed in the keyword:
 format_keyword('sdi calc', 0, 1, 1)
-#> "SDICALC            0         1         1"
 
 # not recommended to use for floats without specifying datatype:
 # BAD
 format_keyword('SDICALC', 1/3, 1, 1)
-#> "SDICALC   0.333333333333333         1         1"
 
 # OK
 format_keyword('SDICALC', dtypes = c('f', 'i', 'i'), 1/3, 1, 1)
-#> "SDICALC         0.33         1         1"
 
 # For multiple keywords to go one after another, use paste() with sep = '\n':
 additionals <- paste(format_keyword('SDICALC', dtypes = c('f', 'i', 'i'), 1/3, 1, 1),
@@ -54,6 +50,5 @@ additionals <- paste(format_keyword('SDICALC', dtypes = c('f', 'i', 'i'), 1/3, 1
                                     1, 300, '', '', 65, 90, 0),
                      sep = "\n")
 cat(additionals)
-#> SDICALC         0.33         1         1
-#> SDIMAX             1    300.00                         65.00     90.00         0
+
 }

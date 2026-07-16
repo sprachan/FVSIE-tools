@@ -1,7 +1,6 @@
 #' Run FVS from a database with stand and tree information.
 #'
-#' @param fvs_bin A character string. File path where the FVS software can be
-#'   found.
+#' @inheritParams load_FVS
 #' @param variant Character string. The two-letter code corresponding to an FVS
 #'   variant. Default is Inland Empire ('ie').
 #' @param keyword_file Character string. Path to the keyword file controlling
@@ -12,13 +11,22 @@
 #' @param stop_code Optional integer. State of the simulation to store.
 #' @param stop_file Optional character string. Where to store the stand
 #'   variables at the supplied stop point.
-#' @param verbose Logical. Should FVS library loading/unloading be accompanied
-#'   by a message? Default `FALSE`.
 #'
 #' @returns The FVS program name (e.g., 'FVSie'), invisibly. Simulation outputs
 #'   are sent to the file specified in the keyword file and to a '.out' file
 #'   (location and prefix specified in keyword file).
 #' @export
+#'
+#' @examples
+#' out_dir <- tempdir()
+#' database <- system.file(file.path('extdata', 'ex_data.db'), package = 'rFVSIEtools')
+#' kwd <- write_FVS_key(out_dir = out_dir, file_prefix = 'example_kwd', database = database)
+#'
+#' \dontrun{
+#' run_FVS(fvs_bin = 'C:/FVS/FVSSoftware/FVSbin',
+#' variant = 'ie',
+#' keyword_file = kwd)
+#' }
 #'
 run_FVS <- function(fvs_bin,
                     variant=c('ie', 'ak', 'bm', 'ca', 'ci', 'cr', 'cs',
@@ -27,8 +35,8 @@ run_FVS <- function(fvs_bin,
                     keyword_file,
                     stop_year = NULL, stop_code = NULL, stop_file = NULL,
                     verbose = FALSE){
-  stopifnot('keyword file must not be empty' = nchar(keyword_file) > 0)
-  stopifnot('keyword_file must have a .key suffix' = substr(keyword_file, nchar(keyword_file)-3, nchar(keyword_file)) == '.key')
+  stopifnot('keyword file must not be empty' = nchar(keyword_file) > 0,
+            'keyword_file must have a .key suffix' = substr(keyword_file, nchar(keyword_file)-3, nchar(keyword_file)) == '.key')
   variant <- rlang::arg_match(variant)
   program <- paste0('FVS', variant)
 
@@ -39,7 +47,7 @@ run_FVS <- function(fvs_bin,
     command <-  paste0(' --keywordfile=', keyword_file)
   }else{
     cmd_stop <- paste0(stop_code, ',', stop_year,
-                       if(!stop_file == '') paste0(',', stop_file) else '')
+                       if(stop_file == '') ''  else paste0(',', stop_file))
     command <- paste0('--keywordfile=', keyword_file,
                       '--stoppoint=', cmd_stop)
   }
@@ -51,7 +59,7 @@ run_FVS <- function(fvs_bin,
              unload_FVS(program, verbose = verbose)
              stop('Function CfvsSetCmdLine not found in shared library.')
            })
-  .C('CfvsSetCmdLine', command, as.integer(nchar(command)), as.integer(0),
+  .C('CfvsSetCmdLine', command, nchar(command), 0L,
      PACKAGE = lib)
 
   tryCatch(stopifnot(is.loaded('fvs', PACKAGE = lib)),
@@ -62,7 +70,7 @@ run_FVS <- function(fvs_bin,
 
   fvs_return <- 0
   while(fvs_return == 0){
-    fvs_return <- .Fortran('fvs', as.integer(0), PACKAGE = lib)
+    fvs_return <- .Fortran('fvs', 0L, PACKAGE = lib)
   }
   unload_FVS(program, verbose = verbose)
 }

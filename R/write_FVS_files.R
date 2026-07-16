@@ -70,10 +70,24 @@
 #'   element must be formatted according to the FVS keyword guide.
 #'
 #' @returns The keyword file name, invisibly.
+#'
+#' @export
+#'
 #' @seealso [format_keyword()] for formatting keywords; [write_multistand_key()]
 #'   for writing a keyword file to run multiple stands with the same simulation
 #'   parameters.
+#' @examples
+#'   out_dir <- tempdir()
+#'   database <- system.file(file.path('extdata', 'ex_data.db'), package = 'rFVSIEtools')
+#'   write_FVS_key(out_dir = out_dir, file_prefix = 'example_kwd', database = database)
 #'
+#'  # inspecting the resulting key file:
+#'  \dontshow{
+#'   cat(readLines(file.path(out_dir, 'example_kwd.key')), sep = '\n')
+#'
+#'   # clean up files. Again, this is only for the example.
+#'   unlink(out_dir, recursive = TRUE)
+#' }
 write_FVS_key <- function(out_dir = getwd(),
                           file_prefix,
                           database,
@@ -112,44 +126,37 @@ write_FVS_key <- function(out_dir = getwd(),
 
   # Fail fast if database not found or tables incorrectly named
   stopifnot('Database file not found; check that it exists' = file.exists(database))
-  check_db(database)
+  check_db_run(database)
 
   # Write STDIDENT if provided -------------------------------------------------
   if(!is.null(STDIDENT)){
-    write(sprintf('%10-s', 'STDIDENT'), file = keyfile_name, append = TRUE)
-    write(sprintf('%80-s', STDIDENT), file = keyfile_name, append = TRUE)
+    write(sprintf('%-10s', 'STDIDENT'), file = keyfile_name, append = TRUE)
+    write(sprintf('%-80s', STDIDENT), file = keyfile_name, append = TRUE)
   }
 
   # Request tree list output ---------------------------------------------------
-  write(sprintf('%10-s%10i%10s%10i%10i%10s%10s%10i',
-                'TREELIST',
-                0,
-                '',
-                0,
-                0,
-                '',
-                '',
-                1),
+  write(sprintf('%-10s%10i%10s%10i%10i%10s%10s%10i',
+                'TREELIST',0,'',0,0,'','',1),
         file = keyfile_name, append = TRUE)
 
   # Database options -----------------------------------------------------------
-  write(sprintf('%10-s', 'DATABASE'), file = keyfile_name, append = TRUE)
+  write(sprintf('%-10s', 'DATABASE'), file = keyfile_name, append = TRUE)
 
-  write(sprintf('%10-s', 'DSNOUT'), file = keyfile_name, append = TRUE)
+  write(sprintf('%-10s', 'DSNOUT'), file = keyfile_name, append = TRUE)
   write(paste0(fvs_output), file = keyfile_name, append = TRUE)
 
-  write(sprintf('%10-s', 'DSNIN'), file = keyfile_name, append = TRUE)
+  write(sprintf('%-10s', 'DSNIN'), file = keyfile_name, append = TRUE)
   write(paste0(database),
         file = keyfile_name, append = TRUE)
 
   # automatically read current stand and tree information from the database
-  write(sprintf('%10-s', 'StandSQL'), file = keyfile_name, append = TRUE)
+  write(sprintf('%-10s', 'StandSQL'), file = keyfile_name, append = TRUE)
   write('SELECT *', file = keyfile_name, append = TRUE)
   write('FROM FVS_StandInit', file = keyfile_name, append = TRUE)
   write(paste0('WHERE Stand_ID = ', "'%StandID%'"), file = keyfile_name, append = TRUE)
   write('EndSQL', file = keyfile_name, append = TRUE)
 
-  write(sprintf('%10-s', 'TreeSQL'), file = keyfile_name, append = TRUE)
+  write(sprintf('%-10s', 'TreeSQL'), file = keyfile_name, append = TRUE)
   write('SELECT *', file = keyfile_name, append = TRUE)
   write('FROM FVS_TreeInit', file = keyfile_name, append = TRUE)
   write(paste0('WHERE Stand_ID = ', "'%StandID%'"), file = keyfile_name, append = TRUE)
@@ -158,106 +165,106 @@ write_FVS_key <- function(out_dir = getwd(),
   # request additional tables
   if(!is.null(db_tables)){
     if(length(db_tables) > 1){
-      sapply(db_tables, FUN = \(x) write(sprintf('%10-s', x),
+      vapply(db_tables, FUN = \(x) write(sprintf('%-10s', x),
                                          file = keyfile_name,
                                          append = TRUE),
+             FUN.VALUE = character(1),
              USE.NAMES = FALSE)
     }else{
-      write(sprintf('%10-s', db_tables), file = keyfile_name, append = TRUE)
+      write(sprintf('%-10s', db_tables), file = keyfile_name, append = TRUE)
     }
   }
-  write(sprintf('%10-s', 'CALBSTDB'), file = keyfile_name, append = TRUE)
-  write(sprintf('%10-s%10i%10i', 'TREELIDB', 2, 0), file = keyfile_name, append = TRUE)
+  write(sprintf('%-10s', 'CALBSTDB'), file = keyfile_name, append = TRUE)
+  write(sprintf('%-10s%10i%10i', 'TREELIDB', 2, 0), file = keyfile_name, append = TRUE)
   if(carbon_report){
-    write(sprintf('%10-s', 'CARBREDB'), file = keyfile_name, append = TRUE)
+    write(sprintf('%-10s', 'CARBREDB'), file = keyfile_name, append = TRUE)
   }
 
-  write(sprintf('%10-s', 'END'), file = keyfile_name, append = TRUE)
+  write(sprintf('%-10s', 'END'), file = keyfile_name, append = TRUE)
   write('', file = keyfile_name, append = TRUE)
 
   # Replication: random seed, tripling -----------------------------------------
-  if(!is.null(random_seed)) write(sprintf('%10-s%10i', 'RANNSEED', random_seed),
+  if(!is.null(random_seed)) write(sprintf('%-10s%10i', 'RANNSEED', random_seed),
                                   file = keyfile_name, append = TRUE)
-  if(!triple) write(sprintf('%10-s', 'NOTRIPLE'),
+  if(!triple) write(sprintf('%-10s', 'NOTRIPLE'),
                     file = keyfile_name, append = TRUE)
 
   # Calibration options --------------------------------------------------------
-  if(!calibrate) write(sprintf('%10-s', 'NOCALIB'),
+  if(!calibrate) write(sprintf('%-10s', 'NOCALIB'),
                        file = keyfile_name, append = TRUE)
-  if(!htd_reg) write(sprintf('%10-s', 'NOHTDREG'),
+  if(!htd_reg) write(sprintf('%-10s', 'NOHTDREG'),
                      file = keyfile_name, append = TRUE)
   if(!is.null(READCORD)){
-    write(sprintf('%10-s', 'READCORD'), file = keyfile_name, append = TRUE)
-    readcord_fmtd <- sapply(READCORD, \(x) sprintf('%10.2f', x),
-                            USE.NAMES = FALSE)
+    write(sprintf('%-10s', 'READCORD'), file = keyfile_name, append = TRUE)
+    readcord_fmtd <- format_readcorx(READCORD)
     cat(readcord_fmtd, file = keyfile_name, append = TRUE, fill = 80)
     write('', file = keyfile_name, append = TRUE)
   }
   if(!is.null(READCORH)){
-    write(sprintf('%10-s', 'READCORH'), file = keyfile_name, append = TRUE)
-    readcorh_fmtd <- sapply(READCORH, \(x) sprintf('%10.2f', x),
-                            USE.NAMES = FALSE)
+    write(sprintf('%-10s', 'READCORH'), file = keyfile_name, append = TRUE)
+    readcorh_fmtd <- format_readcorx(READCORH)
     cat(readcorh_fmtd, file = keyfile_name, append = TRUE, fill = 80)
     write('', file = keyfile_name, append = TRUE)
   }
   if(!is.null(READCORR)){
-    write(sprintf('%10-s', 'READCORR'), file = keyfile_name, append = TRUE)
-    readcorr_fmtd <- sapply(READCORR, \(x) sprintf('%10.2f', x),
-                            USE.NAMES = FALSE)
+    write(sprintf('%-10s', 'READCORR'), file = keyfile_name, append = TRUE)
+    readcorr_fmtd <- format_readcorx(READCORR)
     cat(readcorr_fmtd, file = keyfile_name, append = TRUE, fill = 80)
     write('', file = keyfile_name, append = TRUE)
   }
 
   write('', file = keyfile_name, append = TRUE)
   # Regeneration/Establishment options -----------------------------------------
-  if(!add_regen){
-    write("NOAUTOES", file = keyfile_name, append = TRUE)
-  }else{
+  if(add_regen){
     write("ESTAB", file = keyfile_name, append = TRUE)
     if(length(estab_keywords) >= 1){
       write(estab_keywords, file = keyfile_name, append = TRUE)
       write('', file = keyfile_name, append = TRUE)
     }
+  }else{
+    write("NOAUTOES", file = keyfile_name, append = TRUE)
   }
   write("END", file = keyfile_name, append = TRUE)
   write('', file = keyfile_name, append = TRUE)
   # Fire and Fuels extension ---------------------------------------------------
   if(any(carbon_report, !is.null(ffe_keywords))){
-    write(sprintf('%10-s', 'FMIN'), file = keyfile_name, append = TRUE)
+    write(sprintf('%-10s', 'FMIN'), file = keyfile_name, append = TRUE)
     if(carbon_report){
-      write(sprintf('%10-s', 'CARBREPT'))
+      write(sprintf('%-10s', 'CARBREPT'))
     }
     if(!is.null(ffe_keywords)){
       write(ffe_keywords, file = keyfile_name, append = TRUE)
     }
-    write(sprintf('%10-s', 'END'), file = keyfile_name, append = TRUE)
+    write(sprintf('%-10s', 'END'), file = keyfile_name, append = TRUE)
     write('', file = keyfile_name, append = TRUE)
   }
   # Additional keywords --------------------------------------------------------
   if(length(additionals) > 1){
-    sapply(additionals, \(x) write(x, file = keyfile_name, append = TRUE),
+    vapply(additionals, \(x) write(x, file = keyfile_name, append = TRUE),
+           FUN.VALUE = character(1),
            USE.NAMES = FALSE)
   }else if(length(additionals) == 1){
     write(additionals, file = keyfile_name, append = TRUE)
   }
   write('', file = keyfile_name, append = TRUE)
   # Simulation length and additional years -------------------------------------
-  if(!any(grepl('TIMEINT', additionals))){
-    cycle_length <- 10
-  }else{
-    cycle_length <- as.integer(substr(additionals[grepl('TIMEINT', additionals)],
+  if(any(grepl('TIMEINT', additionals, fixed = TRUE))){
+    cycle_length <- as.integer(substr(grep('TIMEINT', additionals, fixed = TRUE, value = TRUE),
                                       21, 30))
+  }else{
+    cycle_length <- 10
   }
 
   n_cycles <- ceiling(n_years/cycle_length)
-  write(sprintf('%10-s%10i', 'NUMCYCLE', n_cycles), file = keyfile_name, append = TRUE)
+  write(sprintf('%-10s%10i', 'NUMCYCLE', n_cycles), file = keyfile_name, append = TRUE)
 
   if(length(CYCLEAT)>1){
-    sapply(CYCLEAT, \(x) write(sprintf('%10-s%10i', 'CYCLEAT', x),
+    vapply(CYCLEAT, FUN = \(x) write(sprintf('%-10s%10i', 'CYCLEAT', x),
                                file = keyfile_name, append = TRUE),
+           FUN.VALUE = character(1),
            USE.NAMES = FALSE)
   }else if(length(CYCLEAT) == 1){
-    write(sprintf('%10-s%10i', 'CYCLEAT', CYCLEAT), file = keyfile_name, append = TRUE)
+    write(sprintf('%-10s%10i', 'CYCLEAT', CYCLEAT), file = keyfile_name, append = TRUE)
   }
   write('', file = keyfile_name, append = TRUE)
   # Process if single stand ----------------------------------------------------
@@ -332,7 +339,7 @@ write_FVS_key <- function(out_dir = getwd(),
 write_multistand_key <- function(STDIDENTs = NULL, out_dir = getwd(), database,
                                  file_prefix = 'all_stands', addfile_ref = 40,
                                  ...){
-  check_db(database)
+  check_db_run(database)
   stopifnot(addfile_ref > 30)
   if(is.null(STDIDENTs)){
     conn <- DBI::dbConnect(RSQLite::SQLite(), database)
@@ -340,8 +347,8 @@ write_multistand_key <- function(STDIDENTs = NULL, out_dir = getwd(), database,
       dplyr::pull(.data$STAND_ID)
     DBI::dbDisconnect(conn)
   }
-  stopifnot(length(STDIDENTs) > 1)
-  stopifnot('Specified output directory does not exist' = dir.exists(out_dir))
+  stopifnot(length(STDIDENTs) > 1,
+            'Specified output directory does not exist' = dir.exists(out_dir))
   if(.Platform$OS.type == 'windows'){
     out_dir <- normalizePath(out_dir, winslash = '/')
   }else{
@@ -359,36 +366,20 @@ write_multistand_key <- function(STDIDENTs = NULL, out_dir = getwd(), database,
                             file_prefix = 'shared_kwds', database = database, ...)
 
   for(st in STDIDENTs){
-    write(sprintf('%10-s', 'STDIDENT'), file = keyfile_name, append = TRUE)
+    write(sprintf('%-10s', 'STDIDENT'), file = keyfile_name, append = TRUE)
     write(sprintf('%80-s', st), file = keyfile_name, append = TRUE)
 
     # include shared keywords
-    write(sprintf('%10-s%10i', 'OPEN', addfile_ref), file = keyfile_name, append = TRUE)
+    write(sprintf('%-10s%10i', 'OPEN', addfile_ref), file = keyfile_name, append = TRUE)
     write(sprintf('%10s', add_file), file = keyfile_name, append = TRUE)
-    write(sprintf('%10-s%10i', 'ADDFILE', addfile_ref), file = keyfile_name, append = TRUE)
-    write(sprintf('%10-s%10i', 'CLOSE', addfile_ref), file = keyfile_name, append = TRUE)
+    write(sprintf('%-10s%10i', 'ADDFILE', addfile_ref), file = keyfile_name, append = TRUE)
+    write(sprintf('%-10s%10i', 'CLOSE', addfile_ref), file = keyfile_name, append = TRUE)
 
-    write(sprintf('%10-s', 'PROCESS'), file = keyfile_name, append = TRUE)
+    write(sprintf('%-10s', 'PROCESS'), file = keyfile_name, append = TRUE)
     write('', file = keyfile_name, append = TRUE)
   }
   write('STOP', file = keyfile_name, append = TRUE)
   invisible(normalizePath(keyfile_name, winslash = '/'))
 }
 
-#' Helper function to check database validity for running FVS
-#'
-#' @param database Character string. File path to the SQLite input database.
-#'
-#' @returns Nothing. Errors if FVS_StandInit and/or FVS_TreeInit not found in
-#'   the database.
-#' @keywords internal
-check_db <- function(database){
-  conn <- DBI::dbConnect(RSQLite::SQLite(), database)
-  stopifnot('Stand table must be named FVS_StandInit' =
-              'FVS_StandInit' %in% DBI::dbListTables(conn))
-  stopifnot('Tree table must be named FVS_TreeInit' =
-              'FVS_TreeInit' %in% DBI::dbListTables(conn))
 
-  # ensure that database is disconnected regardless of error status
-  on.exit(DBI::dbDisconnect(conn))
-}

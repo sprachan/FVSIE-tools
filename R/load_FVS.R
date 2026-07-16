@@ -27,7 +27,8 @@
 #' #> FVSie already loaded.
 #'
 #' unload_FVS(program = 'FVSie')
-#' #> FVSie unloaded.}
+#' #> FVSie unloaded.
+#' }
 #' @rdname load-unload
 load_FVS <- function(fvs_bin,
                      program = c('FVSie', 'FVSak', 'FVSbm', 'FVSca', 'FVSci',
@@ -60,16 +61,18 @@ load_FVS <- function(fvs_bin,
                   class = 'dynload-msg')
     invisible(program)
   }else if(length(loaded_variants) > 0){
-    rlang::abort(message = paste0('Variant(s) ', loaded_variants, ' already loaded. Use unload_FVS() to unload, then try again.'),
+    rlang::abort(message = c(paste0('Variant(s) ', loaded_variants, ' already loaded.'),
+                             'i' = 'Use unload_FVS() to unload, then try again.'),
                  class = 'dynload-err')
   }else{
     tryCatch({dyn.load(lib_loc, local = TRUE, now = TRUE)
-      if(verbose) message(program, ' loaded.')
-      invisible(program)},
+              if(verbose) message(program, ' loaded.')
+              invisible(program)
+              },
              error = function(cond){
                rlang::abort(paste0('Loading shared library with dyn.load() failed with error ',
-                    cond),
-                    class = 'dynload-err')
+                                   cond),
+                            class = 'dynload-err')
              })
   }
 }
@@ -85,16 +88,17 @@ unload_FVS <- function(program = c('FVSie', 'FVSak', 'FVSbm', 'FVSca', 'FVSci',
   if(program %in% names(getLoadedDLLs())){
     lib_loc <- getLoadedDLLs()[[program]][['path']]
     tryCatch({dyn.unload(lib_loc)
-      if(verbose) message(program, ' unloaded.')
-      invisible(program)},
+              if(verbose) message(program, ' unloaded.')
+              invisible(program)
+              },
       error = function(cond){
         rlang::abort(message = paste0('Unloading shared library with dyn.unload() failed with error ',
-             cond),
-             class = 'dynload-err')
+                                      cond),
+                     class = 'dynload-err')
       })
   }else{
-    rlang::inform(message = paste0(program,
-                                   ' already not loaded. Consider running getLoadedDLLs() to see if any other variants are loaded.'),
+    rlang::inform(message = c(paste0(program, ' is not loaded so cannot be unloaded.'),
+                              'i' = 'Consider running getLoadedDLLs() to see if any other variants are loaded.'),
                   class = 'dynload-msg')
   }
 }

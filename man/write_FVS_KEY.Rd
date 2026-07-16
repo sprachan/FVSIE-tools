@@ -119,6 +119,19 @@ By default, the keyword file specifies a simulation where:
 \item The regeneration establishment model is turned ON (see \href{https://www.fs.usda.gov/sites/default/files/forest-management/essential-fvs.pdf}{Essential FVS} section 5.4 for details).
 }
 }
+\examples{
+  out_dir <- tempdir()
+  database <- system.file(file.path('extdata', 'ex_data.db'), package = 'rFVSIEtools')
+  write_FVS_key(out_dir = out_dir, file_prefix = 'example_kwd', database = database)
+
+ # inspecting the resulting key file:
+ \dontshow{
+  cat(readLines(file.path(out_dir, 'example_kwd.key')), sep = '\n')
+
+  # clean up files. Again, this is only for the example.
+  unlink(out_dir, recursive = TRUE)
+}
+}
 \seealso{
 \code{\link[=format_keyword]{format_keyword()}} for formatting keywords; \code{\link[=write_multistand_key]{write_multistand_key()}}
 for writing a keyword file to run multiple stands with the same simulation
