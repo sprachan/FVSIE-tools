@@ -18,11 +18,11 @@
 #' @export
 #'
 #' @examples
+#' #' \dontrun{
 #' out_dir <- tempdir()
 #' database <- system.file(file.path('extdata', 'ex_data.db'), package = 'rFVSIEtools')
 #' kwd <- write_FVS_key(out_dir = out_dir, file_prefix = 'example_kwd', database = database)
 #'
-#' \dontrun{
 #' run_FVS(fvs_bin = 'C:/FVS/FVSSoftware/FVSbin',
 #' variant = 'ie',
 #' keyword_file = kwd)

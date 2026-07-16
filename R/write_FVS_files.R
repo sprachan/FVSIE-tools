@@ -77,16 +77,11 @@
 #'   for writing a keyword file to run multiple stands with the same simulation
 #'   parameters.
 #' @examples
+#' \dontrun{
 #'   out_dir <- tempdir()
 #'   database <- system.file(file.path('extdata', 'ex_data.db'), package = 'rFVSIEtools')
 #'   write_FVS_key(out_dir = out_dir, file_prefix = 'example_kwd', database = database)
 #'
-#'  # inspecting the resulting key file:
-#'  \dontshow{
-#'   cat(readLines(file.path(out_dir, 'example_kwd.key')), sep = '\n')
-#'
-#'   # clean up files. Again, this is only for the example.
-#'   unlink(out_dir, recursive = TRUE)
 #' }
 write_FVS_key <- function(out_dir = getwd(),
                           file_prefix,
