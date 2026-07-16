@@ -75,28 +75,25 @@ rounded to (default 2).</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">#' format_keyword('NOINGROW')</span></span></span>
-<span class="r-in"><span><span class="co">#&gt; "NOINGROW  "</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">format_keyword</span><span class="op">(</span><span class="st">'NOINGROW'</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "NOINGROW  "</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">format_keyword</span><span class="op">(</span><span class="st">'SDICALC'</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "%10-s         0         1         1"</span>
-<span class="r-in"><span><span class="co">#&gt; "SDICALC            0         1         1"</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SDICALC            0         1         1"</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Lower case will be converted to upper case and any spaces will be removed in the keyword:</span></span></span>
+<span class="r-in"><span><span class="co"># Lower case will be converted to upper case,</span></span></span>
+<span class="r-in"><span><span class="co">#  and any spaces will be removed in the keyword:</span></span></span>
 <span class="r-in"><span><span class="fu">format_keyword</span><span class="op">(</span><span class="st">'sdi calc'</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "%10-s         0         1         1"</span>
-<span class="r-in"><span><span class="co">#&gt; "SDICALC            0         1         1"</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SDICALC            0         1         1"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># not recommended to use for floats without specifying datatype:</span></span></span>
 <span class="r-in"><span><span class="co"># BAD</span></span></span>
 <span class="r-in"><span><span class="fu">format_keyword</span><span class="op">(</span><span class="st">'SDICALC'</span>, <span class="fl">1</span><span class="op">/</span><span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "%10-s0.333333333333333         1         1"</span>
-<span class="r-in"><span><span class="co">#&gt; "SDICALC   0.333333333333333         1         1"</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SDICALC   0.333333333333333         1         1"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># OK</span></span></span>
 <span class="r-in"><span><span class="fu">format_keyword</span><span class="op">(</span><span class="st">'SDICALC'</span>, dtypes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'f'</span>, <span class="st">'i'</span>, <span class="st">'i'</span><span class="op">)</span>, <span class="fl">1</span><span class="op">/</span><span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "%10-s      0.33         1         1"</span>
-<span class="r-in"><span><span class="co">#&gt; "SDICALC         0.33         1         1"</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SDICALC         0.33         1         1"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># For multiple keywords to go one after another, use paste() with sep = '\n':</span></span></span>
 <span class="r-in"><span><span class="va">additionals</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu">format_keyword</span><span class="op">(</span><span class="st">'SDICALC'</span>, dtypes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'f'</span>, <span class="st">'i'</span>, <span class="st">'i'</span><span class="op">)</span>, <span class="fl">1</span><span class="op">/</span><span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>,</span></span>
@@ -105,10 +102,9 @@ rounded to (default 2).</p></dd>
 <span class="r-in"><span>                                    <span class="fl">1</span>, <span class="fl">300</span>, <span class="st">''</span>, <span class="st">''</span>, <span class="fl">65</span>, <span class="fl">90</span>, <span class="fl">0</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                     sep <span class="op">=</span> <span class="st">"\n"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="va">additionals</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> %10-s      0.33         1         1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> %10-s         1    300.00                         65.00     90.00         0</span>
-<span class="r-in"><span><span class="co">#&gt; SDICALC         0.33         1         1</span></span></span>
-<span class="r-in"><span><span class="co">#&gt; SDIMAX             1    300.00                         65.00     90.00         0</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> SDICALC         0.33         1         1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> SDIMAX             1    300.00                         65.00     90.00         0</span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

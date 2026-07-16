@@ -49,3 +49,17 @@ unload_FVS(
 The variant name, invisibly, if successful.
 
 ## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+load_FVS(program = 'FVSie', fvs_bin = 'C:/FVS/FVSSoftware/FVSbin')
+#> FVSie loaded.
+
+# Attempting to load an already loaded library will lead to a message:
+load_FVS('FVSie', fvs_bin = 'C:/FVS/FVSSoftware/FVSbin')
+#> FVSie already loaded.
+
+unload_FVS(program = 'FVSie')
+#> FVSie unloaded.
+} # }
+```

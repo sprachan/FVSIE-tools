@@ -27,7 +27,7 @@ to do for a simulation experiment).
 
 3.  Write a keyword file specifying simulation parameters using one of
     two built-in functions:
-    [`write_FVS_key()`](https://sprachan.github.io/FVSIE-tools/reference/write_FVS_KEY.md)
+    [`write_FVS_key()`](https://sprachan.github.io/FVSIE-tools/reference/write_FVS_key.md)
     (for a single stand) or
     [`write_multistand_key()`](https://sprachan.github.io/FVSIE-tools/reference/write_multistand_key.md)
     (for multiple stands).

@@ -78,7 +78,7 @@ write_multistand_key(
 - ...:
 
   Parameters passed to
-  [`write_FVS_key()`](https://sprachan.github.io/FVSIE-tools/reference/write_FVS_KEY.md).
+  [`write_FVS_key()`](https://sprachan.github.io/FVSIE-tools/reference/write_FVS_key.md).
   See details.
 
 ## Value
@@ -88,7 +88,7 @@ The name of the keyword file that runs all requested stands, invisibly.
 ## Details
 
 The following named arguments can be passed to the `...` argument (see
-[`write_FVS_key()`](https://sprachan.github.io/FVSIE-tools/reference/write_FVS_KEY.md)
+[`write_FVS_key()`](https://sprachan.github.io/FVSIE-tools/reference/write_FVS_key.md)
 for details):
 
 - `n_years`: Integer, default 100.
@@ -121,4 +121,4 @@ for details):
 
 ## See also
 
-[`write_FVS_key()`](https://sprachan.github.io/FVSIE-tools/reference/write_FVS_KEY.md)
+[`write_FVS_key()`](https://sprachan.github.io/FVSIE-tools/reference/write_FVS_key.md)

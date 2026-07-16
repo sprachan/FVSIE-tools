@@ -13,7 +13,7 @@ tables for use with `get_FIA_state()`.
 
 ``` r
 get_FIA_state(
-  db_loc,
+  database,
   fia_cond_subset,
   verbose = FALSE,
   add_identifiers = FALSE
@@ -24,7 +24,7 @@ fetch_cond(db_loc, filter_statements)
 
 ## Arguments
 
-- db_loc:
+- database:
 
   Character string. Location for the FIA database.
 
@@ -43,6 +43,10 @@ fetch_cond(db_loc, filter_statements)
   table. PID and TUID are unique, persistent identifiers. They uniquely
   identify each FIA plot and each tree in each plot. Unlike FIA-provided
   identifiers, these stay the same across all years.
+
+- db_loc:
+
+  Character string. Location for the FIA database.
 
 - filter_statements:
 
@@ -67,18 +71,18 @@ the associated tree list (matching STAND_CN) can be passed to
 
 ``` r
 
-db_loc <- system.file('extdata', 'dummy_fia.db', package = 'rFVSIEtools')
-cond <- fetch_cond(db_loc, 'STATECD == 30, INVYR >= 2001')
-get_FIA_state(db_loc, cond)
+database <- system.file('extdata', 'dummy_fia.db', package = 'rFVSIEtools')
+cond <- fetch_cond(database, 'STATECD == 30, INVYR >= 2001')
+get_FIA_state(database, cond)
 #> $FVS_StandInit
 #> # A tibble: 5 × 35
 #>   STAND_CN  STAND_ID VARIANT STATE INV_DAY INV_YEAR INV_MONTH LATITUDE LONGITUDE
 #>   <chr>     <chr>    <chr>   <dbl>   <dbl>    <dbl>     <dbl>    <dbl>     <dbl>
-#> 1 18876285… 3014029… IE         30      14     2016         8     47.8     -113.
-#> 2 40395300… 3012043… EM         30      16     2014         8     46.0     -112.
-#> 3 40395358… 3012047… IE         30      24     2014         9     47.9     -114.
+#> 1 18876285… 3014029… IE         30      14     2015         8     47.8     -113.
+#> 2 40395300… 3012043… EM         30      16     2013         8     46.0     -112.
+#> 3 40395358… 3012047… IE         30      24     2013         9     47.9     -114.
 #> 4 40395823… 3012063… IE         30      24     2012         5     46.9     -114.
-#> 5 40394253… 3012009… EM         30      17     2014         8     45.1     -108.
+#> 5 40394253… 3012009… EM         30      17     2013         8     45.1     -108.
 #> # ℹ 26 more variables: REGION <dbl>, FOREST <dbl>, PV_CODE <chr>,
 #> #   ECOREGION <chr>, BASAL_AREA_FACTOR <dbl>, INV_PLOT_SIZE <dbl>,
 #> #   BRK_DBH <dbl>, AGE <dbl>, ASPECT <dbl>, SLOPE <dbl>, TOPO <chr>,

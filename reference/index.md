@@ -14,14 +14,12 @@
 - [`load_FVS()`](https://sprachan.github.io/FVSIE-tools/reference/load-unload.md)
   [`unload_FVS()`](https://sprachan.github.io/FVSIE-tools/reference/load-unload.md)
   : Load/unload the specified FVS variant as a shared library
-- [`map_habcode()`](https://sprachan.github.io/FVSIE-tools/reference/map_habcode.md)
-  : Map PV/PV ref code pairs to associated FVS-IE habitat type
 - [`get_tree_columns()`](https://sprachan.github.io/FVSIE-tools/reference/needed_columns.md)
   [`get_stand_columns()`](https://sprachan.github.io/FVSIE-tools/reference/needed_columns.md)
   : Get a table of needed tree and/or stand list columns
 - [`run_FVS()`](https://sprachan.github.io/FVSIE-tools/reference/run_FVS.md)
   : Run FVS from a database with stand and tree information.
-- [`write_FVS_key()`](https://sprachan.github.io/FVSIE-tools/reference/write_FVS_KEY.md)
+- [`write_FVS_key()`](https://sprachan.github.io/FVSIE-tools/reference/write_FVS_key.md)
   : Write an FVS Keyword file.
 - [`write_multistand_key()`](https://sprachan.github.io/FVSIE-tools/reference/write_multistand_key.md)
   : Write a keyword file to run multiple stands with the same simulation

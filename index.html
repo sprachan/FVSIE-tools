@@ -64,7 +64,7 @@
 <ol style="list-style-type: decimal">
 <li><p>Download state-level FIA data from the <a href="https://research.fs.usda.gov/products/dataandtools/fia-datamart" class="external-link">FIA datamart website</a>.</p></li>
 <li><p>Subset data to stands of interest using dplyr-style filter statements in <code><a href="reference/get_FIA_state.html">fetch_cond()</a></code> followed by <code><a href="reference/get_FIA_state.html">get_FIA_state()</a></code>.</p></li>
-<li><p>Write a keyword file specifying simulation parameters using one of two built-in functions: <code><a href="reference/write_FVS_KEY.html">write_FVS_key()</a></code> (for a single stand) or <code><a href="reference/write_multistand_key.html">write_multistand_key()</a></code> (for multiple stands).</p></li>
+<li><p>Write a keyword file specifying simulation parameters using one of two built-in functions: <code><a href="reference/write_FVS_key.html">write_FVS_key()</a></code> (for a single stand) or <code><a href="reference/write_multistand_key.html">write_multistand_key()</a></code> (for multiple stands).</p></li>
 <li><p>Run FVS with the desired variant using <code><a href="reference/run_FVS.html">run_FVS()</a></code>.</p></li>
 <li><p>Retrieve outputs from the resulting output (a SQL .db file is the default, but .xlsx and .xls outputs may also be requested).</p></li>
 </ol>

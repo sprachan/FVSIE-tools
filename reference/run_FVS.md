@@ -21,7 +21,7 @@ run_FVS(
 
 - fvs_bin:
 
-  A character string. File path where the FVS software can be found.
+  Character string. The file path where FVS DLLs are located.
 
 - variant:
 
@@ -32,7 +32,7 @@ run_FVS(
 
   Character string. Path to the keyword file controlling the simulation;
   include the .key extension. See
-  [`write_FVS_key()`](https://sprachan.github.io/FVSIE-tools/reference/write_FVS_KEY.md)
+  [`write_FVS_key()`](https://sprachan.github.io/FVSIE-tools/reference/write_FVS_key.md)
   for keyword file generation.
 
 - stop_year:
@@ -58,3 +58,5 @@ run_FVS(
 The FVS program name (e.g., 'FVSie'), invisibly. Simulation outputs are
 sent to the file specified in the keyword file and to a '.out' file
 (location and prefix specified in keyword file).
+
+## Examples
