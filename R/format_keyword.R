@@ -1,14 +1,16 @@
 #' Format an FVS keyword
 #'
 #' Add whitespace and use optional datatypes to format an FVS keyword to match
-#' requirements. To format READCORD/READCORR/READCORH values, see (...)
+#' requirements. This function does not format READCOR* values, which must be
+#' passed to [write_FVS_key()] as vectors in order of the species in the
+#' variant.
 #'
 #' @param keyword A character string. The FVS keyword name.
 #' @param dtypes Optional character vector specifying the datatype of each
 #'   field. The length needs to match the number of fields. 's' for string, 'i'
 #'   for integer, and 'f' for float (decimals)
-#' @param round_to An optional integer specifying how many places floats should be
-#'   rounded to (default 2).
+#' @param round_to An optional integer specifying how many places floats should
+#'   be rounded to (default 2).
 #' @param ... Optional values for fields associated with the keyword. Will be
 #'   coerced to the type specified by `dtypes` if specified or character if
 #'   `dtypes` is not specified.
@@ -43,8 +45,7 @@
 
 format_keyword <- function(keyword, ..., dtypes = NULL, round_to = 2){
   fields <- list(...)
-  stopifnot('Keyword must be at most 10 characters' = nchar(keyword) <= 10,
-            'Fields must be at most 10 characters' = all(vapply(fields, FUN = \(x) nchar(x) <= 10, FUN.VALUE = logical(1))))
+  stopifnot('Keyword must be at most 10 characters' = nchar(keyword) <= 10)
   n_fields <- length(fields)
   if(!is.null(dtypes)){
     stopifnot('Length of dtypes must match number of fields provided' =
@@ -54,6 +55,7 @@ format_keyword <- function(keyword, ..., dtypes = NULL, round_to = 2){
   }else if(n_fields == 0){
     return(sprintf('%-10s', toupper(gsub(' ', '', keyword, fixed = TRUE))))
   }else{
+    stopifnot('Fields must be at most 10 characters if dtype not provided' = all(vapply(fields, FUN = \(x) nchar(x) <= 10, FUN.VALUE = logical(1))))
     fmt <- paste0('%-10s', paste0(rep('%10s', n_fields), collapse = ''))
   }
   return(do.call(sprintf, c(fmt, append(fields, values = toupper(gsub(' ', '', keyword, fixed = TRUE)), after = 0))))

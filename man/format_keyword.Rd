@@ -17,15 +17,17 @@ coerced to the type specified by \code{dtypes} if specified or character if
 field. The length needs to match the number of fields. 's' for string, 'i'
 for integer, and 'f' for float (decimals)}
 
-\item{round_to}{An optional integer specifying how many places floats should be
-rounded to (default 2).}
+\item{round_to}{An optional integer specifying how many places floats should
+be rounded to (default 2).}
 }
 \value{
 A character string.
 }
 \description{
 Add whitespace and use optional datatypes to format an FVS keyword to match
-requirements. To format READCORD/READCORR/READCORH values, see (...)
+requirements. This function does not format READCOR* values, which must be
+passed to \code{\link[=write_FVS_key]{write_FVS_key()}} as vectors in order of the species in the
+variant.
 }
 \examples{
 format_keyword('NOINGROW')
@@ -38,7 +40,7 @@ format_keyword('sdi calc', 0, 1, 1)
 
 # not recommended to use for floats without specifying datatype:
 # BAD
-format_keyword('SDICALC', 1/3, 1, 1)
+try(format_keyword('SDICALC', 1/3, 1, 1))
 
 # OK
 format_keyword('SDICALC', dtypes = c('f', 'i', 'i'), 1/3, 1, 1)
