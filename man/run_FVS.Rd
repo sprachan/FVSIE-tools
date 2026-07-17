@@ -45,14 +45,12 @@ are sent to the file specified in the keyword file and to a '.out' file
 Run FVS from a database with stand and tree information.
 }
 \examples{
-#' \dontrun{
+\dontrun{
 out_dir <- tempdir()
 database <- system.file(file.path('extdata', 'ex_data.db'), package = 'rFVSIEtools')
 kwd <- write_FVS_key(out_dir = out_dir, file_prefix = 'example_kwd', database = database)
 
-run_FVS(fvs_bin = 'C:/FVS/FVSSoftware/FVSbin',
-variant = 'ie',
-keyword_file = kwd)
+run_FVS(fvs_bin = 'C:/FVS/FVSSoftware/FVSbin', variant = 'ie', keyword_file = kwd)
 }
 
 }
