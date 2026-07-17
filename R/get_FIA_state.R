@@ -12,6 +12,15 @@
 #' @returns `get_FIA_state()`: List of 2. $FVS_StandInit is a dataframe of the stand information. $FVS_TreeInit is a dataframe of all tree measurements. A single stand from this list selected with STAND_CN and the associated tree list (matching STAND_CN) can be passed to `run_FVS()`.
 #' @examples
 #'
+#' # get just the condition table:
+#' database <- system.file('extdata', 'dummy_fia.db', package = 'rFVSIEtools')
+#' fetch_cond(database, 'STATECD == 30, INVYR >= 2001')
+#'
+#' # if filtering by a character column, use "" to surround filter statement and
+#' #> '' to surround the string:
+#' fetch_cond(database, "CN == '303115670489998'")
+#'
+#' # fetch_cond() dataframe can go directly into get_FIA_state():
 #' database <- system.file('extdata', 'dummy_fia.db', package = 'rFVSIEtools')
 #' cond <- fetch_cond(database, 'STATECD == 30, INVYR >= 2001')
 #' get_FIA_state(database, cond)
@@ -19,7 +28,7 @@
 #' @export
 get_FIA_state <- function(database, fia_cond_subset, verbose = FALSE,
                           add_identifiers = FALSE){
-  on.exit(DBI::dbDisconnect(fia_db_conn), add = TRUE)
+  on.exit(try(DBI::dbDisconnect(fia_db_conn)), add = TRUE)
   check_db_get(database)
   fia_db_conn <- DBI::dbConnect(RSQLite::SQLite(), database)
   pcn_remote <- dplyr::copy_to(dest = fia_db_conn,
