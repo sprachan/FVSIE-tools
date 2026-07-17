@@ -27,7 +27,7 @@
 #'
 #' # not recommended to use for floats without specifying datatype:
 #' # BAD
-#' format_keyword('SDICALC', 1/3, 1, 1)
+#' try(format_keyword('SDICALC', 1/3, 1, 1))
 #'
 #' # OK
 #' format_keyword('SDICALC', dtypes = c('f', 'i', 'i'), 1/3, 1, 1)
@@ -43,6 +43,8 @@
 
 format_keyword <- function(keyword, ..., dtypes = NULL, round_to = 2){
   fields <- list(...)
+  stopifnot('Keyword must be at most 10 characters' = nchar(keyword) <= 10,
+            'Fields must be at most 10 characters' = all(vapply(fields, FUN = \(x) nchar(x) <= 10, FUN.VALUE = logical(1))))
   n_fields <- length(fields)
   if(!is.null(dtypes)){
     stopifnot('Length of dtypes must match number of fields provided' =
