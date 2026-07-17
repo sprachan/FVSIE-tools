@@ -1,8 +1,10 @@
 # Format an FVS keyword
 
 Add whitespace and use optional datatypes to format an FVS keyword to
-match requirements. To format READCORD/READCORR/READCORH values, see
-(...)
+match requirements. This function does not format READCOR\* values,
+which must be passed to
+[`write_FVS_key()`](https://sprachan.github.io/FVSIE-tools/reference/write_FVS_key.md)
+as vectors in order of the species in the variant.
 
 ## Usage
 
@@ -53,8 +55,9 @@ format_keyword('sdi calc', 0, 1, 1)
 
 # not recommended to use for floats without specifying datatype:
 # BAD
-format_keyword('SDICALC', 1/3, 1, 1)
-#> [1] "SDICALC   0.333333333333333         1         1"
+try(format_keyword('SDICALC', 1/3, 1, 1))
+#> Error in format_keyword("SDICALC", 1/3, 1, 1) : 
+#>   Fields must be at most 10 characters if dtype not provided
 
 # OK
 format_keyword('SDICALC', dtypes = c('f', 'i', 'i'), 1/3, 1, 1)

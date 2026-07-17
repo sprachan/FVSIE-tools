@@ -95,8 +95,18 @@ by a message? Default <code>FALSE</code>.</p></dd>
 <span class="r-in"><span><span class="co">#&gt; FVSie loaded.</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Attempting to load an already loaded library will lead to a message:</span></span></span>
+<span class="r-in"><span><span class="fu">load_FVS</span><span class="op">(</span>program <span class="op">=</span> <span class="st">'FVSie'</span>, fvs_bin <span class="op">=</span> <span class="st">'C:/FVS/FVSSoftware/FVSbin'</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">load_FVS</span><span class="op">(</span><span class="st">'FVSie'</span>, fvs_bin <span class="op">=</span> <span class="st">'C:/FVS/FVSSoftware/FVSbin'</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co">#&gt; FVSie already loaded.</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Similarly, loading a different variant when one is already loaded will error:</span></span></span>
+<span class="r-in"><span><span class="fu">load_FVS</span><span class="op">(</span>program <span class="op">=</span> <span class="st">'FVSie'</span>, fvs_bin <span class="op">=</span> <span class="st">'C:/FVS/FVSSoftware/FVSbin'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">load_FVS</span><span class="op">(</span>program <span class="op">=</span> <span class="st">'FVSak'</span>, fvs_bin <span class="op">=</span> <span class="st">'C:/FVS/FVSSoftware/FVSbin'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co">#&gt; Error in `load_FVS()`:</span></span></span>
+<span class="r-in"><span><span class="co">#&gt; ! Variant(s) FVSie already loaded.</span></span></span>
+<span class="r-in"><span><span class="co">#&gt; ℹ Use unload_FVS() to unload, then try again.</span></span></span>
+<span class="r-in"><span><span class="co">#&gt; Run `rlang::last_trace()` to see where the error occurred.</span></span></span>
+<span class="r-in"><span><span class="co">#&gt; Called from: signal_abort(cnd, .file)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">unload_FVS</span><span class="op">(</span>program <span class="op">=</span> <span class="st">'FVSie'</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co">#&gt; FVSie unloaded.</span></span></span>

@@ -1,4 +1,7 @@
-# Get FVS-ready FIA data from a state-level database
+# Fetch filtered FIA condition table for subsetting
+
+`fetch_cond()` is a convenience function for fetching subsets of COND
+tables for use with `get_FIA_state()`.
 
 `get_FIA_state()` fetches FVS Stand and FVS Tree tables from a
 downloaded state-level FIA database (from the [FIA datamart
@@ -6,23 +9,33 @@ website](https://apps.fs.usda.gov/fia/datamart/datamart.html)). Note
 that these tables are only available at the state-level, so this
 function only works with state-level databases.
 
-`fetch_cond()` is a convenience function for fetching subsets of COND
-tables for use with `get_FIA_state()`.
-
 ## Usage
 
 ``` r
+fetch_cond(db_loc, filter_statements = "")
+
 get_FIA_state(
   database,
   fia_cond_subset,
   verbose = FALSE,
   add_identifiers = FALSE
 )
-
-fetch_cond(db_loc, filter_statements)
 ```
 
 ## Arguments
+
+- db_loc:
+
+  Character string. Location for the FIA database.
+
+- filter_statements:
+
+  Character string of dplyr-style filter statements. If not provided,
+  entire (large!) condition table will be returned. Column names in the
+  filter_statements arguments must match columns in the COND table from
+  the [NFI
+  database](https://research.fs.usda.gov/sites/default/files/2025-08/wo-v9-4_Aug2025_UG_FIADB_database_description_NFI.pdf).
+  See examples.
 
 - database:
 
@@ -44,19 +57,10 @@ fetch_cond(db_loc, filter_statements)
   identify each FIA plot and each tree in each plot. Unlike FIA-provided
   identifiers, these stay the same across all years.
 
-- db_loc:
-
-  Character string. Location for the FIA database.
-
-- filter_statements:
-
-  Character string of dplyr-style filter statements. Column names in the
-  filter_statements arguments must match columns in the COND table from
-  the [NFI
-  database](https://research.fs.usda.gov/sites/default/files/2025-08/wo-v9-4_Aug2025_UG_FIADB_database_description_NFI.pdf).
-  See examples.
-
 ## Value
+
+`fetch_cond()`: COND data frame for use as a filter for
+`get_FIA_state()`.
 
 `get_FIA_state()`: List of 2. \$FVS_StandInit is a dataframe of the
 stand information. \$FVS_TreeInit is a dataframe of all tree
@@ -64,13 +68,45 @@ measurements. A single stand from this list selected with STAND_CN and
 the associated tree list (matching STAND_CN) can be passed to
 [`run_FVS()`](https://sprachan.github.io/FVSIE-tools/reference/run_FVS.md).
 
-`fetch_cond()`: COND data frame for use as a filter for
-`get_FIA_state()`.
-
 ## Examples
 
 ``` r
 
+# get just the condition table:
+database <- system.file('extdata', 'dummy_fia.db', package = 'rFVSIEtools')
+fetch_cond(database, 'STATECD == 30, INVYR >= 2001')
+#> # A tibble: 5 × 153
+#>   CN            PLT_CN INVYR STATECD UNITCD COUNTYCD  PLOT CONDID COND_STATUS_CD
+#>   <chr>         <chr>  <int>   <int>  <int>    <int> <int>  <int>          <int>
+#> 1 303115670489… 18876…  2014      30      1       29 85318      1              1
+#> 2 196394991020… 40395…  2012      30      4       43 82908      1              1
+#> 3 196396140020… 40395…  2012      30      1       47 83061      1              1
+#> 4 196408590020… 40395…  2012      30      3       63 89014      1              1
+#> 5 196382142020… 40394…  2012      30      2        9 88715      1              1
+#> # ℹ 144 more variables: COND_NONSAMPLE_REASN_CD <int>, RESERVCD <int>,
+#> #   OWNCD <int>, OWNGRPCD <int>, ADFORCD <int>, FORTYPCD <int>, FLDTYPCD <int>,
+#> #   MAPDEN <int>, STDAGE <int>, STDSZCD <int>, FLDSZCD <int>, SITECLCD <int>,
+#> #   SICOND <int>, SIBASE <int>, SISP <int>, STDORGCD <int>, STDORGSP <dbl>,
+#> #   PROP_BASIS <chr>, CONDPROP_UNADJ <dbl>, MICRPROP_UNADJ <dbl>,
+#> #   SUBPPROP_UNADJ <dbl>, MACRPROP_UNADJ <dbl>, SLOPE <int>, ASPECT <int>,
+#> #   PHYSCLCD <int>, GSSTKCD <int>, ALSTKCD <int>, DSTRBCD1 <int>, …
+
+# if filtering by a character column, use "" to surround filter statement and
+#> '' to surround the string:
+fetch_cond(database, "CN == '303115670489998'")
+#> # A tibble: 1 × 153
+#>   CN            PLT_CN INVYR STATECD UNITCD COUNTYCD  PLOT CONDID COND_STATUS_CD
+#>   <chr>         <chr>  <int>   <int>  <int>    <int> <int>  <int>          <int>
+#> 1 303115670489… 18876…  2014      30      1       29 85318      1              1
+#> # ℹ 144 more variables: COND_NONSAMPLE_REASN_CD <int>, RESERVCD <int>,
+#> #   OWNCD <int>, OWNGRPCD <int>, ADFORCD <int>, FORTYPCD <int>, FLDTYPCD <int>,
+#> #   MAPDEN <int>, STDAGE <int>, STDSZCD <int>, FLDSZCD <int>, SITECLCD <int>,
+#> #   SICOND <int>, SIBASE <int>, SISP <int>, STDORGCD <int>, STDORGSP <dbl>,
+#> #   PROP_BASIS <chr>, CONDPROP_UNADJ <dbl>, MICRPROP_UNADJ <dbl>,
+#> #   SUBPPROP_UNADJ <dbl>, MACRPROP_UNADJ <dbl>, SLOPE <int>, ASPECT <int>,
+#> #   PHYSCLCD <int>, GSSTKCD <int>, ALSTKCD <int>, DSTRBCD1 <int>, …
+
+# fetch_cond() dataframe can go directly into get_FIA_state():
 database <- system.file('extdata', 'dummy_fia.db', package = 'rFVSIEtools')
 cond <- fetch_cond(database, 'STATECD == 30, INVYR >= 2001')
 get_FIA_state(database, cond)

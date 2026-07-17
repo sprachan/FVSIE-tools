@@ -8,9 +8,9 @@
   : Example Tree list
 - [`format_keyword()`](https://sprachan.github.io/FVSIE-tools/reference/format_keyword.md)
   : Format an FVS keyword
-- [`get_FIA_state()`](https://sprachan.github.io/FVSIE-tools/reference/get_FIA_state.md)
-  [`fetch_cond()`](https://sprachan.github.io/FVSIE-tools/reference/get_FIA_state.md)
-  : Get FVS-ready FIA data from a state-level database
+- [`fetch_cond()`](https://sprachan.github.io/FVSIE-tools/reference/get_FIA_state.md)
+  [`get_FIA_state()`](https://sprachan.github.io/FVSIE-tools/reference/get_FIA_state.md)
+  : Fetch filtered FIA condition table for subsetting
 - [`load_FVS()`](https://sprachan.github.io/FVSIE-tools/reference/load-unload.md)
   [`unload_FVS()`](https://sprachan.github.io/FVSIE-tools/reference/load-unload.md)
   : Load/unload the specified FVS variant as a shared library
