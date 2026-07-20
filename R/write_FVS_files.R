@@ -225,7 +225,7 @@ write_FVS_key <- function(out_dir = getwd(),
   if(any(carbon_report, !is.null(ffe_keywords))){
     write(sprintf('%-10s', 'FMIN'), file = keyfile_name, append = TRUE)
     if(carbon_report){
-      write(sprintf('%-10s', 'CARBREPT'))
+      write(sprintf('%-10s', 'CARBREPT'), file = keyfile_name, append = TRUE)
     }
     if(!is.null(ffe_keywords)){
       write(ffe_keywords, file = keyfile_name, append = TRUE)
