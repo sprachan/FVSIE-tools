@@ -39,6 +39,7 @@
 #' @export
 get_FIA_state <- function(database, fia_cond_subset, verbose = FALSE,
                           add_identifiers = FALSE, output_database = 'fvs_ready.db'){
+  stopifnot(file.exists(database))
   on.exit(try(DBI::dbDisconnect(fia_db_conn)), add = TRUE)
   check_db_get(database)
   fia_db_conn <- DBI::dbConnect(RSQLite::SQLite(), database)
