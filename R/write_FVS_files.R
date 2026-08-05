@@ -253,14 +253,17 @@ write_FVS_key <- function(out_dir = getwd(),
   n_cycles <- ceiling(n_years/cycle_length)
   write(sprintf('%-10s%10i', 'NUMCYCLE', n_cycles), file = keyfile_name, append = TRUE)
 
-  if(length(CYCLEAT)>1){
-    vapply(CYCLEAT, FUN = \(x) write(sprintf('%-10s%10i', 'CYCLEAT', x),
-                               file = keyfile_name, append = TRUE),
-           FUN.VALUE = character(1),
-           USE.NAMES = FALSE)
-  }else if(length(CYCLEAT) == 1){
-    write(sprintf('%-10s%10i', 'CYCLEAT', CYCLEAT), file = keyfile_name, append = TRUE)
+  if(is.null(STDIDENT)){
+    if(length(CYCLEAT)>1){
+      vapply(CYCLEAT, FUN = \(x) write(sprintf('%-10s%10i', 'CYCLEAT', x),
+                                       file = keyfile_name, append = TRUE),
+             FUN.VALUE = character(1),
+             USE.NAMES = FALSE)
+    }else if(length(CYCLEAT) == 1){
+      write(sprintf('%-10s%10i', 'CYCLEAT', CYCLEAT), file = keyfile_name, append = TRUE)
+    }
   }
+
   write('', file = keyfile_name, append = TRUE)
   # Process if single stand ----------------------------------------------------
   if(!is.null(STDIDENT)){
@@ -304,13 +307,14 @@ write_FVS_key <- function(out_dir = getwd(),
 #' @param addfile_ref Optional integer file reference number, for FVS use. See
 #'   FVS keyword documentation for the ADDFILE keyword. Must be at least 31;
 #'   default is 40.
+#' @param CYCLEAT Optional integer vector where length(CYCLEAT) ==
+#'   length(STDIDENTs). Additional reporting years for each stand.
 #' @param ... Parameters passed to [write_FVS_key()]. See details.
 #'
-#' @details The following named arguments can be passed to the `...` argument (see
-#'   [write_FVS_key()] for details):
+#' @details The following named arguments can be passed to the `...` argument
+#'   (see [write_FVS_key()] for details):
 #'
 #'    * `n_years`: Integer, default 100.
-#'    * `CYCLEAT`: Optional integer.
 #'    * `calibrate`: Logical, default `TRUE`.
 #'    * `htd_reg`: Logical, default `TRUE`.
 #'    * `triple`: Logical, default `TRUE`.
@@ -333,7 +337,7 @@ write_FVS_key <- function(out_dir = getwd(),
 
 write_multistand_key <- function(STDIDENTs = NULL, out_dir = getwd(), database,
                                  file_prefix = 'all_stands', addfile_ref = 40,
-                                 ...){
+                                 CYCLEAT = NULL, ...){
   check_db_run(database)
   stopifnot(addfile_ref > 30)
   if(is.null(STDIDENTs)){
@@ -343,7 +347,8 @@ write_multistand_key <- function(STDIDENTs = NULL, out_dir = getwd(), database,
     DBI::dbDisconnect(conn)
   }
   stopifnot(length(STDIDENTs) > 1,
-            'Specified output directory does not exist' = dir.exists(out_dir))
+            'Specified output directory does not exist' = dir.exists(out_dir),
+            length(CYCLEAT) == length(STDIDENTs))
   if(.Platform$OS.type == 'windows'){
     out_dir <- normalizePath(out_dir, winslash = '/')
   }else{
@@ -360,9 +365,14 @@ write_multistand_key <- function(STDIDENTs = NULL, out_dir = getwd(), database,
   add_file <- write_FVS_key(STDIDENT = NULL, out_dir = out_dir,
                             file_prefix = 'shared_kwds', database = database, ...)
 
-  for(st in STDIDENTs){
+  for(i in seq_along(STDIDENTs)){
+    st <- STDIDENTs[i]
     write(sprintf('%-10s', 'STDIDENT'), file = keyfile_name, append = TRUE)
-    write(sprintf('%80-s', st), file = keyfile_name, append = TRUE)
+    write(sprintf('%-80s', st), file = keyfile_name, append = TRUE)
+
+    if(!is.null(CYCLEAT)){
+      write(sprintf('%-10s%10i', 'CYCLEAT', CYCLEAT[i]), file = keyfile_name, append = TRUE)
+    }
 
     # include shared keywords
     write(sprintf('%-10s%10i', 'OPEN', addfile_ref), file = keyfile_name, append = TRUE)
