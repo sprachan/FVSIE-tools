@@ -32,9 +32,11 @@
 #' fetch_cond(database, "CN == '303115670489998'")
 #'
 #' # fetch_cond() dataframe can go directly into get_FIA_state():
+#' \dontrun{
 #' database <- system.file('extdata', 'dummy_fia.db', package = 'rFVSIEtools')
 #' cond <- fetch_cond(database, 'STATECD == 30, INVYR >= 2001')
 #' get_FIA_state(database, cond)
+#' }
 #'
 #' @export
 get_FIA_state <- function(database, fia_cond_subset, verbose = FALSE,

@@ -11,6 +11,7 @@ write_multistand_key(
   database,
   file_prefix = "all_stands",
   addfile_ref = 40,
+  CYCLEAT = NULL,
   ...
 )
 }
@@ -32,6 +33,9 @@ to go before the '.key' extension. Default for multistand runs is
 \item{addfile_ref}{Optional integer file reference number, for FVS use. See
 FVS keyword documentation for the ADDFILE keyword. Must be at least 31;
 default is 40.}
+
+\item{CYCLEAT}{Optional integer vector where length(CYCLEAT) ==
+length(STDIDENTs). Additional reporting years for each stand.}
 
 \item{...}{Parameters passed to \code{\link[=write_FVS_key]{write_FVS_key()}}. See details.}
 }
@@ -61,11 +65,10 @@ By default, the shared keyword file specifies a simulation where:
 See details for simulation options.
 }
 \details{
-The following named arguments can be passed to the \code{...} argument (see
-\code{\link[=write_FVS_key]{write_FVS_key()}} for details):
+The following named arguments can be passed to the \code{...} argument
+(see \code{\link[=write_FVS_key]{write_FVS_key()}} for details):
 \itemize{
 \item \code{n_years}: Integer, default 100.
-\item \code{CYCLEAT}: Optional integer.
 \item \code{calibrate}: Logical, default \code{TRUE}.
 \item \code{htd_reg}: Logical, default \code{TRUE}.
 \item \code{triple}: Logical, default \code{TRUE}.
