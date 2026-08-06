@@ -368,15 +368,15 @@ write_multistand_key <- function(STDIDENTs = NULL, out_dir = getwd(), database,
     write(sprintf('%-10s', 'STDIDENT'), file = keyfile_name, append = TRUE)
     write(sprintf('%-80s', st), file = keyfile_name, append = TRUE)
 
-    if(!is.null(CYCLEAT)){
-      write(sprintf('%-10s%10i', 'CYCLEAT', CYCLEAT[i]), file = keyfile_name, append = TRUE)
-    }
-
     # include shared keywords
     write(sprintf('%-10s%10i', 'OPEN', addfile_ref), file = keyfile_name, append = TRUE)
     write(sprintf('%10s', add_file), file = keyfile_name, append = TRUE)
     write(sprintf('%-10s%10i', 'ADDFILE', addfile_ref), file = keyfile_name, append = TRUE)
     write(sprintf('%-10s%10i', 'CLOSE', addfile_ref), file = keyfile_name, append = TRUE)
+
+    if(!is.null(CYCLEAT)){
+      write(sprintf('%-10s%10i', 'CYCLEAT', CYCLEAT[i]), file = keyfile_name, append = TRUE)
+    }
 
     write(sprintf('%-10s', 'PROCESS'), file = keyfile_name, append = TRUE)
     write('', file = keyfile_name, append = TRUE)
