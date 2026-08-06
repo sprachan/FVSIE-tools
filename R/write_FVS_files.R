@@ -214,12 +214,12 @@ write_FVS_key <- function(out_dir = getwd(),
     write("ESTAB", file = keyfile_name, append = TRUE)
     if(length(estab_keywords) >= 1){
       write(estab_keywords, file = keyfile_name, append = TRUE)
+      write("END", file = keyfile_name, append = TRUE)
       write('', file = keyfile_name, append = TRUE)
     }
   }else{
     write("NOAUTOES", file = keyfile_name, append = TRUE)
   }
-  write("END", file = keyfile_name, append = TRUE)
   write('', file = keyfile_name, append = TRUE)
   # Fire and Fuels extension ---------------------------------------------------
   if(any(carbon_report, !is.null(ffe_keywords))){
