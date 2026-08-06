@@ -1,6 +1,6 @@
 Package: rFVSIEtools
 Title: Helpers for Running the Forest Vegetation Simulator
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: 
     person("Sejal", "Prachand", , "sp258446@umconnect.umt.edu", role = c("aut", "cre"))
 Description: Provides wrapper functions to enable running rFVS, particularly with FIA data.

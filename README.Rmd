@@ -30,7 +30,7 @@ This package is primarily intended to streamline the use of FIA data with FVS, m
 
 1. Download state-level FIA data from the [FIA datamart website](https://research.fs.usda.gov/products/dataandtools/fia-datamart).
 
-2. Subset data to stands of interest using dplyr-style filter statements in `fetch_cond()` followed by `get_FIA_state()`.
+2. Subset data to stands of interest using dplyr-style filter statements in `fetch_cond()` followed by `get_FVS_ready()`.
 
 3. Write a keyword file specifying simulation parameters using one of two built-in functions: `write_FVS_key()` (for a single stand) or `write_multistand_key()` (for multiple stands).
 
@@ -43,7 +43,7 @@ This package is primarily intended to streamline the use of FIA data with FVS, m
 
 Suppose we want to run FVS and get 20-year carbon estimates for all 100% forested FIA plots that lie in the Lolo National Forest in Western Montana. We'll project from the latest measurement to 20 years in the future to avoid projecting the same plots forward multiple times.
 
-After downloading state-level data from the FIA datamart to a folder called 'fia_data', we would then filter the FIA state-level data by condition to get 100% forested plots. Note that we set `add_identifers = TRUE` in the call to `get_FIA_state()`. This automatically adds persistent unique plot and tree identifier columns (PID and TUID, respectively) that allow easy tracking of a single plot or tree over time.
+After downloading state-level data from the FIA datamart to a folder called 'fia_data', we would then filter the FIA state-level data by condition to get 100% forested plots. Note that we set `add_identifers = TRUE` in the call to `get_FVS_ready()`. This automatically adds persistent unique plot and tree identifier columns (PID and TUID, respectively) that allow easy tracking of a single plot or tree over time.
 
 ``` r
 library(rFVSIEtools)
@@ -53,8 +53,8 @@ library(dplyr)
 
 database <- file.path('fia_data', 'SQLite_FIADB_MT.db')
 cond <- fetch_cond(database, "INVYR >= 2001, COND_STATUS_CD == 1, CONDPROP_UNADJ == 1")
-state_data <- get_FIA_state(database, cond, 
-                             output_database = file.path('fia_data', 'fvs_ready.db',
+state_data <- get_FVS_ready(database, cond, 
+                             output_database = file.path('fia_data', 'fvs_ready.db'),
                              add_identifiers = TRUE) 
 #> automatically writes to fia_data/fvs_ready.db
 

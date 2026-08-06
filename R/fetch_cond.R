@@ -1,7 +1,7 @@
 #' Fetch filtered FIA condition table for subsetting
 #'
 #' `fetch_cond()` is a convenience function for fetching subsets of COND tables
-#' for use with [get_FIA_state()].
+#' for use with [get_FVS_ready()].
 #'
 #' @param db_loc Character string. Location for the FIA database.
 #' @param filter_statements Character string of dplyr-style filter statements.
@@ -12,8 +12,8 @@
 #'   See examples.
 #'
 #' @returns `fetch_cond()`: COND data frame for use as a filter for
-#'   `get_FIA_state()`.
-#' @rdname get_FIA_state
+#'   `get_FVS_ready()`.
+#' @rdname get_FVS_ready
 #' @export
 #'
 #'

@@ -20,17 +20,16 @@ check_db_run <- function(database){
 #' Helper function to check database validity for getting FIA data
 #'
 #' @param database Character string. File path to the SQLite input database.
+#' @param tables Character string or vector. Names of requested tables.
 #'
-#' @returns Nothing. Errors if FVS_STANDINIT_PLOT and/or FVS_TREEINIT_PLOT not found in
+#' @returns Nothing. Errors if requested tables not found in
 #'   the database.
 #' @keywords internal
 #' @noRd
-check_db_get <- function(database){
+check_db_get <- function(database, tables = c('FVS_STANDINIT_PLOT',
+                                              'FVS_TREEINIT_PLOT')){
   conn <- DBI::dbConnect(RSQLite::SQLite(), database)
-  stopifnot('Stand table must be named FVS_STANDINIT_PLOT' =
-              'FVS_STANDINIT_PLOT' %in% DBI::dbListTables(conn),
-            'Tree table must be named FVS_TREEINIT_PLOT' =
-              'FVS_TREEINIT_PLOT' %in% DBI::dbListTables(conn))
+  stopifnot('Requested table(s) not found in database' = all(tables %in% DBI::dbListTables(conn)))
 
   # ensure that database is disconnected regardless of error status
   on.exit(DBI::dbDisconnect(conn), add = TRUE)

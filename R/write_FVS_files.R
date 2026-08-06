@@ -328,8 +328,6 @@ write_FVS_key <- function(out_dir = getwd(),
 #'    * `READCORH`: Optional numeric vector.
 #'    * `additionals`: Optional character vector.
 #'
-#'
-#'
 #' @returns The name of the keyword file that runs all requested stands,
 #'   invisibly.
 #' @export
@@ -348,7 +346,7 @@ write_multistand_key <- function(STDIDENTs = NULL, out_dir = getwd(), database,
   }
   stopifnot(length(STDIDENTs) > 1,
             'Specified output directory does not exist' = dir.exists(out_dir),
-            length(CYCLEAT) == length(STDIDENTs))
+            ifelse(is.null(CYCLEAT), TRUE, length(CYCLEAT) == length(STDIDENTs)))
   if(.Platform$OS.type == 'windows'){
     out_dir <- normalizePath(out_dir, winslash = '/')
   }else{

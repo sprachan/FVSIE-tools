@@ -14,8 +14,8 @@ A data frame with 1 rows and 34 columns.
 ex_stand
 }
 \description{
-A subset of FIA data for just one plot in western Montana.
-These data come from the FVS_STANDINIT_PLOT table and have been processed using \code{\link[=get_FIA_state]{get_FIA_state()}}
-with the option "add_identifiers" set to TRUE.
+A subset of FIA data for just one plot in western Montana. These data come
+from the FVS_STANDINIT_PLOT table in the MT database and have been processed
+using \code{\link[=get_FVS_ready]{get_FVS_ready()}} with the option "add_identifiers" set to TRUE.
 }
 \keyword{datasets}

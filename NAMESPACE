@@ -2,7 +2,7 @@
 
 export(fetch_cond)
 export(format_keyword)
-export(get_FIA_state)
+export(get_FVS_ready)
 export(get_stand_columns)
 export(get_tree_columns)
 export(load_FVS)
