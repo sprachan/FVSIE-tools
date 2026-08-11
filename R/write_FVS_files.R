@@ -20,6 +20,8 @@
 #'
 #' @param out_dir A character string specifying the directory for the keyword
 #'   file and FVS output. Defaults to working directory.
+#' @param out_db A character string specifying the destination SQLite database
+#'   for FVS tables.
 #' @param file_prefix A character string giving the keyword file name to go
 #'   before the '.key' extension.
 #' @param database A character string specifying the full file path of the input
@@ -84,6 +86,7 @@
 #'
 #' }
 write_FVS_key <- function(out_dir = getwd(),
+                          out_db ='FVSOut.db',
                           file_prefix,
                           database,
                           STDIDENT = NULL,
@@ -110,7 +113,7 @@ write_FVS_key <- function(out_dir = getwd(),
   }
 
   # Output paths
-  fvs_output <- file.path(out_dir, 'FVSOut.db')
+  fvs_output <- file.path(out_dir, out_db)
 
   keyfile_name <- file.path(out_dir, paste0(file_prefix, '.key'))
   if(file.exists(keyfile_name)){
@@ -294,11 +297,10 @@ write_FVS_key <- function(out_dir = getwd(),
 #'
 #'   See details for simulation options.
 #'
+#' @inheritParams write_FVS_key
 #' @param STDIDENTs Optional character vector of stand identifiers specifying
 #'   the stands to be run in the simulation. If not provided, all STAND_ID
 #'   values in the stand table of the provided database will be used.
-#' @param out_dir A character string specifying the directory for the keyword
-#'   file and FVS output. Defaults to working directory.
 #' @param database A character string specifying the full file path of the input
 #'   SQLite database.
 #' @param file_prefix An optional character string giving the keyword file name
@@ -333,7 +335,8 @@ write_FVS_key <- function(out_dir = getwd(),
 #' @export
 #' @seealso [write_FVS_key()]
 
-write_multistand_key <- function(STDIDENTs = NULL, out_dir = getwd(), database,
+write_multistand_key <- function(STDIDENTs = NULL, out_dir = getwd(),
+                                 out_db = 'FVSOut.db', database,
                                  file_prefix = 'all_stands', addfile_ref = 40,
                                  CYCLEAT = NULL, ...){
   check_db_run(database)
@@ -360,7 +363,7 @@ write_multistand_key <- function(STDIDENTs = NULL, out_dir = getwd(), database,
     file.remove(keyfile_name)
   }
 
-  add_file <- write_FVS_key(STDIDENT = NULL, out_dir = out_dir,
+  add_file <- write_FVS_key(STDIDENT = NULL, out_dir = out_dir, out_db = out_db,
                             file_prefix = 'shared_kwds', database = database, ...)
 
   for(i in seq_along(STDIDENTs)){

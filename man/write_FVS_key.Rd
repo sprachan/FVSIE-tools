@@ -6,6 +6,7 @@
 \usage{
 write_FVS_key(
   out_dir = getwd(),
+  out_db = "FVSOut.db",
   file_prefix,
   database,
   STDIDENT = NULL,
@@ -29,6 +30,9 @@ write_FVS_key(
 \arguments{
 \item{out_dir}{A character string specifying the directory for the keyword
 file and FVS output. Defaults to working directory.}
+
+\item{out_db}{A character string specifying the destination SQLite database
+for FVS tables.}
 
 \item{file_prefix}{A character string giving the keyword file name to go
 before the '.key' extension.}

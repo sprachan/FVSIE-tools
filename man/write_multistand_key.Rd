@@ -8,6 +8,7 @@ parameters}
 write_multistand_key(
   STDIDENTs = NULL,
   out_dir = getwd(),
+  out_db = "FVSOut.db",
   database,
   file_prefix = "all_stands",
   addfile_ref = 40,
@@ -22,6 +23,9 @@ values in the stand table of the provided database will be used.}
 
 \item{out_dir}{A character string specifying the directory for the keyword
 file and FVS output. Defaults to working directory.}
+
+\item{out_db}{A character string specifying the destination SQLite database
+for FVS tables.}
 
 \item{database}{A character string specifying the full file path of the input
 SQLite database.}
