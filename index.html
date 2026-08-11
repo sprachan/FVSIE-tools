@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">rFVSIEtools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +32,7 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -63,7 +64,7 @@
 </h3>
 <ol style="list-style-type: decimal">
 <li><p>Download state-level FIA data from the <a href="https://research.fs.usda.gov/products/dataandtools/fia-datamart" class="external-link">FIA datamart website</a>.</p></li>
-<li><p>Subset data to stands of interest using dplyr-style filter statements in <code><a href="reference/get_FIA_state.html">fetch_cond()</a></code> followed by <code><a href="reference/get_FIA_state.html">get_FIA_state()</a></code>.</p></li>
+<li><p>Subset data to stands of interest using dplyr-style filter statements in <code><a href="reference/get_FVS_ready.html">fetch_cond()</a></code> followed by <code><a href="reference/get_FVS_ready.html">get_FVS_ready()</a></code>.</p></li>
 <li><p>Write a keyword file specifying simulation parameters using one of two built-in functions: <code><a href="reference/write_FVS_key.html">write_FVS_key()</a></code> (for a single stand) or <code><a href="reference/write_multistand_key.html">write_multistand_key()</a></code> (for multiple stands).</p></li>
 <li><p>Run FVS with the desired variant using <code><a href="reference/run_FVS.html">run_FVS()</a></code>.</p></li>
 <li><p>Retrieve outputs from the resulting SQL .db file.</p></li>
@@ -75,20 +76,21 @@
 </h2>
 <p><em>Projecting carbon for all forested FIA plots in the Lolo National Forest, Montana</em></p>
 <p>Suppose we want to run FVS and get 20-year carbon estimates for all 100% forested FIA plots that lie in the Lolo National Forest in Western Montana. We’ll project from the latest measurement to 20 years in the future to avoid projecting the same plots forward multiple times.</p>
-<p>After downloading state-level data from the FIA datamart to a folder called ‘fia_data’, we would then filter the FIA state-level data by condition to get 100% forested plots. Note that we set <code>add_identifers = TRUE</code> in the call to <code><a href="reference/get_FIA_state.html">get_FIA_state()</a></code>. This automatically adds persistent unique plot and tree identifier columns (PID and TUID, respectively) that allow easy tracking of a single plot or tree over time.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(rFVSIEtools)</span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co"># Filter FIA-ready data into an FVS-ready database</span></span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>database <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="st">'fia_data'</span>, <span class="st">'SQLite_FIADB_MT.db'</span>)</span>
-<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>cond <span class="ot">&lt;-</span> <span class="fu">fetch_cond</span>(database, <span class="st">"INVYR &gt;= 2001, COND_STATUS_CD == 1, CONDPROP_UNADJ == 1"</span>)</span>
-<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>state_data <span class="ot">&lt;-</span> <span class="fu">get_FIA_state</span>(database, cond, </span>
-<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>                             <span class="at">output_database =</span> <span class="fu">file.path</span>(<span class="st">'fia_data'</span>, <span class="st">'fvs_ready.db'</span>,</span>
-<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>                             <span class="at">add_identifiers =</span> <span class="cn">TRUE</span>) </span>
-<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="co">#&gt; automatically writes to fia_data/fvs_ready.db</span></span>
-<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a></span>
-<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a>state_data<span class="sc">$</span>FVS_StandInit</span></code></pre></div>
+<p>After downloading state-level data from the FIA datamart to a folder called ‘fia_data’, we would then filter the FIA state-level data by condition to get 100% forested plots. Note that we set <code>add_identifers = TRUE</code> in the call to <code><a href="reference/get_FVS_ready.html">get_FVS_ready()</a></code>. This automatically adds persistent unique plot and tree identifier columns (PID and TUID, respectively) that allow easy tracking of a single plot or tree over time.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://sprachan.github.io/FVSIE-tools/">rFVSIEtools</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Filter FIA-ready data into an FVS-ready database</span></span>
+<span></span>
+<span><span class="va">database</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">'fia_data'</span>, <span class="st">'SQLite_FIADB_MT.db'</span><span class="op">)</span></span>
+<span><span class="va">cond</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_FVS_ready.html">fetch_cond</a></span><span class="op">(</span><span class="va">database</span>, <span class="st">"INVYR &gt;= 2001, COND_STATUS_CD == 1, CONDPROP_UNADJ == 1"</span><span class="op">)</span></span>
+<span><span class="va">state_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_FVS_ready.html">get_FVS_ready</a></span><span class="op">(</span><span class="va">database</span>, <span class="va">cond</span>, </span>
+<span>                             output_database <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">'fia_data'</span>, <span class="st">'fvs_ready.db'</span><span class="op">)</span>,</span>
+<span>                             add_identifiers <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> </span>
+<span><span class="co">#&gt; automatically writes to fia_data/fvs_ready.db</span></span>
+<span></span>
+<span><span class="va">state_data</span><span class="op">$</span><span class="va">FVS_StandInit</span></span></code></pre></div>
 <div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># A tibble: 6,376 × 84</span></span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>   STAND_CN  STAND_ID VARIANT INV_DAY INV_YEAR INV_MONTH GROUPS ADDFILES FVSKEYWORDS GIS_LINK LATITUDE</span>
 <span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>   <span class="sc">&lt;</span>chr<span class="sc">&gt;</span>     <span class="er">&lt;</span>chr<span class="sc">&gt;</span>    <span class="er">&lt;</span>chr<span class="sc">&gt;</span>     <span class="er">&lt;</span>dbl<span class="sc">&gt;</span>    <span class="er">&lt;</span>dbl<span class="sc">&gt;</span>     <span class="er">&lt;</span>dbl<span class="sc">&gt;</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>  <span class="er">&lt;</span>chr<span class="sc">&gt;</span>    <span class="er">&lt;</span>chr<span class="sc">&gt;</span>       <span class="er">&lt;</span>chr<span class="sc">&gt;</span>       <span class="er">&lt;</span>dbl<span class="sc">&gt;</span></span>
@@ -116,11 +118,11 @@
 </blockquote>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">stand_ids</span> <span class="op">&lt;-</span> <span class="va">state_data</span><span class="op">$</span><span class="va">FVS_StandInit</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">group_by</span><span class="op">(</span><span class="va">PID</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">INV_YEAR</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">INV_YEAR</span><span class="op">)</span>, <span class="co"># take the biggest inventory year for each plot</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">PID</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">INV_YEAR</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">INV_YEAR</span><span class="op">)</span>, <span class="co"># take the biggest inventory year for each plot</span></span>
 <span>         <span class="va">LOCATION</span> <span class="op">==</span> <span class="fl">116</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>         <span class="fu">pull</span><span class="op">(</span><span class="va">STAND_ID</span><span class="op">)</span> <span class="co"># get the STAND_ID column as a vector</span></span></code></pre></div>
-<p>To free up some RAM ahead of running FVS, we’ll remove the large list created by <code><a href="reference/get_FIA_state.html">get_FIA_state()</a></code> and the intermediate dataframe of filtered stands. This step is optional.</p>
+<span>         <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">STAND_ID</span><span class="op">)</span> <span class="co"># get the STAND_ID column as a vector</span></span></code></pre></div>
+<p>To free up some RAM ahead of running FVS, we’ll remove the large list created by <code>get_FIA_state()</code> and the intermediate dataframe of filtered stands. This step is optional.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/rm.html" class="external-link">rm</a></span><span class="op">(</span><span class="va">state_data</span>, <span class="va">stands</span><span class="op">)</span></span></code></pre></div>
 <p>Now, we’ll write keyword files. We tell FVS that the relevant data is in the database output from our earlier <code>get_FIA_state</code> call, which is <code>fia_data/fvs_ready.db</code>. We also specify the stands we wish to run using the <code>STDIDENTs</code> argument as well as the number of years in the simulation. We also request the carbon report.</p>
@@ -144,15 +146,15 @@
 <p>The FVS_Error table is always worth inspecting if present, using code like:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">conn</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">RSQLite</span><span class="fu">::</span><span class="fu"><a href="https://rsqlite.r-dbi.org/reference/SQLite.html" class="external-link">SQLite</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">'fia_data/FVSOut.db'</span><span class="op">)</span></span>
-<span><span class="va">fvs_errs</span> <span class="op">&lt;-</span> <span class="fu">tbl</span><span class="op">(</span><span class="va">conn</span>, <span class="st">'FVS_Error'</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">collect</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">fvs_errs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">conn</span>, <span class="st">'FVS_Error'</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">conn</span><span class="op">)</span></span></code></pre></div>
 <p>In this case, we have some stands with very high density (from saplings) or higher stocking than FVS expects, some stands where FVS counts the number of plots incorrectly and relies on the data in the database, some stands with no projectable records (i.e., all the trees are dead), and one stand where the potential vegetation/potential vegetation reference combination was unrecognized.</p>
 <p>After inspecting the error table, carbon results can be pulled into R with a few lines of code:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">conn</span> <span class="op">&lt;-</span> <span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">dbConnect</a></span><span class="op">(</span><span class="fu">RSQLite</span><span class="fu">::</span><span class="fu"><a href="https://rsqlite.r-dbi.org/reference/SQLite.html" class="external-link">SQLite</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">'FVSOut.db'</span><span class="op">)</span></span>
-<span><span class="va">carbon</span> <span class="op">&lt;-</span> <span class="fu">tbl</span><span class="op">(</span><span class="va">conn</span>, <span class="st">'FVS_Carbon'</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">collect</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">carbon</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">conn</span>, <span class="st">'FVS_Carbon'</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbDisconnect.html" class="external-link">dbDisconnect</a></span><span class="op">(</span><span class="va">conn</span><span class="op">)</span></span></code></pre></div>
 <p>And the <code>dplyr::tbl(conn, &lt;table_name&gt;) |&gt; dplyr::collect()</code> pipeline will work to pull any of the listed tables into R provided that the FVS output database is connected.</p>
 </div>

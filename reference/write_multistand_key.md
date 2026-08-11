@@ -42,6 +42,7 @@ write_multistand_key(
   database,
   file_prefix = "all_stands",
   addfile_ref = 40,
+  CYCLEAT = NULL,
   ...
 )
 ```
@@ -75,6 +76,11 @@ write_multistand_key(
   documentation for the ADDFILE keyword. Must be at least 31; default is
   40.
 
+- CYCLEAT:
+
+  Optional integer vector where length(CYCLEAT) == length(STDIDENTs).
+  Additional reporting years for each stand.
+
 - ...:
 
   Parameters passed to
@@ -92,8 +98,6 @@ The following named arguments can be passed to the `...` argument (see
 for details):
 
 - `n_years`: Integer, default 100.
-
-- `CYCLEAT`: Optional integer.
 
 - `calibrate`: Logical, default `TRUE`.
 

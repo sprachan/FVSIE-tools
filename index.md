@@ -21,9 +21,9 @@ to do for a simulation experiment).
 
 2.  Subset data to stands of interest using dplyr-style filter
     statements in
-    [`fetch_cond()`](https://sprachan.github.io/FVSIE-tools/reference/get_FIA_state.md)
+    [`fetch_cond()`](https://sprachan.github.io/FVSIE-tools/reference/get_FVS_ready.md)
     followed by
-    [`get_FIA_state()`](https://sprachan.github.io/FVSIE-tools/reference/get_FIA_state.md).
+    [`get_FVS_ready()`](https://sprachan.github.io/FVSIE-tools/reference/get_FVS_ready.md).
 
 3.  Write a keyword file specifying simulation parameters using one of
     two built-in functions:
@@ -51,12 +51,13 @@ After downloading state-level data from the FIA datamart to a folder
 called ‘fia_data’, we would then filter the FIA state-level data by
 condition to get 100% forested plots. Note that we set
 `add_identifers = TRUE` in the call to
-[`get_FIA_state()`](https://sprachan.github.io/FVSIE-tools/reference/get_FIA_state.md).
+[`get_FVS_ready()`](https://sprachan.github.io/FVSIE-tools/reference/get_FVS_ready.md).
 This automatically adds persistent unique plot and tree identifier
 columns (PID and TUID, respectively) that allow easy tracking of a
 single plot or tree over time.
 
 ``` r
+
 library(rFVSIEtools)
 library(dplyr)
 
@@ -64,8 +65,8 @@ library(dplyr)
 
 database <- file.path('fia_data', 'SQLite_FIADB_MT.db')
 cond <- fetch_cond(database, "INVYR >= 2001, COND_STATUS_CD == 1, CONDPROP_UNADJ == 1")
-state_data <- get_FIA_state(database, cond, 
-                             output_database = file.path('fia_data', 'fvs_ready.db',
+state_data <- get_FVS_ready(database, cond, 
+                             output_database = file.path('fia_data', 'fvs_ready.db'),
                              add_identifiers = TRUE) 
 #> automatically writes to fia_data/fvs_ready.db
 
@@ -119,10 +120,8 @@ stand_ids <- state_data$FVS_StandInit |>
 ```
 
 To free up some RAM ahead of running FVS, we’ll remove the large list
-created by
-[`get_FIA_state()`](https://sprachan.github.io/FVSIE-tools/reference/get_FIA_state.md)
-and the intermediate dataframe of filtered stands. This step is
-optional.
+created by `get_FIA_state()` and the intermediate dataframe of filtered
+stands. This step is optional.
 
 ``` r
 
