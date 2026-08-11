@@ -3,8 +3,6 @@
 export(fetch_cond)
 export(format_keyword)
 export(get_FVS_ready)
-export(get_stand_columns)
-export(get_tree_columns)
 export(load_FVS)
 export(run_FVS)
 export(write_FVS_key)
