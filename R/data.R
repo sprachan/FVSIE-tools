@@ -19,3 +19,11 @@
 "ex_trees"
 
 
+#' Bark ratio coefficients
+#'
+#' R dataframe of bark ratio coefficients.
+#' See FVS-IE variant overview table 4.2.1 and ie/bratio.f in FVS source code.
+#'
+#' @format ## `bark_ratios`
+#' A data frame with 23 rows and 3 columns.
+"bark_ratios"
