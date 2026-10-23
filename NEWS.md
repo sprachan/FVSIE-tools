@@ -2,6 +2,12 @@
 
 # rFVSIEtools 0.1.1
 
+Bug fixes and docs improvements:
+* Fix CYCLEAT bug in multistand keyword files
+* Fix missing END keyword after ESTAB keyword
+* Remove get stand/tree column functions which are unnecessary with DB integration
+* More concise docs
+
 # rFVSIEtools 0.1.0
 
 Full set of basic package functions:
