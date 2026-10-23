@@ -39,6 +39,7 @@ See details for simulation options.
 write_multistand_key(
   STDIDENTs = NULL,
   out_dir = getwd(),
+  out_db = "FVSOut.db",
   database,
   file_prefix = "all_stands",
   addfile_ref = 40,
@@ -59,6 +60,11 @@ write_multistand_key(
 
   A character string specifying the directory for the keyword file and
   FVS output. Defaults to working directory.
+
+- out_db:
+
+  A character string specifying the destination SQLite database for FVS
+  tables.
 
 - database:
 

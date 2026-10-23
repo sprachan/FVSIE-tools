@@ -39,6 +39,7 @@ By default, the keyword file specifies a simulation where:
 ``` r
 write_FVS_key(
   out_dir = getwd(),
+  out_db = "FVSOut.db",
   file_prefix,
   database,
   STDIDENT = NULL,
@@ -66,6 +67,11 @@ write_FVS_key(
 
   A character string specifying the directory for the keyword file and
   FVS output. Defaults to working directory.
+
+- out_db:
+
+  A character string specifying the destination SQLite database for FVS
+  tables.
 
 - file_prefix:
 

@@ -39,7 +39,7 @@ The regeneration establishment model is turned ON (see Essential FVS section 5.4
 
     <a class="navbar-brand me-2" href="../index.html">rFVSIEtools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,6 +85,7 @@ except outputs are automatically written to a SQLite database.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">write_FVS_key</span><span class="op">(</span></span>
 <span>  out_dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  out_db <span class="op">=</span> <span class="st">"FVSOut.db"</span>,</span>
 <span>  <span class="va">file_prefix</span>,</span>
 <span>  <span class="va">database</span>,</span>
 <span>  STDIDENT <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -113,6 +114,11 @@ except outputs are automatically written to a SQLite database.</p>
 <dl><dt id="arg-out-dir">out_dir<a class="anchor" aria-label="anchor" href="#arg-out-dir"></a></dt>
 <dd><p>A character string specifying the directory for the keyword
 file and FVS output. Defaults to working directory.</p></dd>
+
+
+<dt id="arg-out-db">out_db<a class="anchor" aria-label="anchor" href="#arg-out-db"></a></dt>
+<dd><p>A character string specifying the destination SQLite database
+for FVS tables.</p></dd>
 
 
 <dt id="arg-file-prefix">file_prefix<a class="anchor" aria-label="anchor" href="#arg-file-prefix"></a></dt>
