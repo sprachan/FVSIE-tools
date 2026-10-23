@@ -346,9 +346,10 @@ write_multistand_key <- function(STDIDENTs = NULL, out_dir = getwd(),
     STDIDENTs <- dplyr::tbl(conn, 'FVS_StandInit') |>
       dplyr::pull(.data$STAND_ID)
     DBI::dbDisconnect(conn)
+  }else if(length(STDIDENTs) == 1){
+    warning('Only one stand given rather than multiple stands.')
   }
-  stopifnot(length(STDIDENTs) > 1,
-            'Specified output directory does not exist' = dir.exists(out_dir),
+  stopifnot('Specified output directory does not exist' = dir.exists(out_dir),
             ifelse(is.null(CYCLEAT), TRUE, length(CYCLEAT) == length(STDIDENTs)))
   if(.Platform$OS.type == 'windows'){
     out_dir <- normalizePath(out_dir, winslash = '/')
