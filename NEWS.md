@@ -1,4 +1,7 @@
-# rFVSIEtools (development version)
+# rFVSIEtools 0.2.0
+New functionality:
+- Convert inside to outside bark diameter with one function (uses IE bark ratio equations)
+- Get and plot FVS errors and warnings for a selection of stands with a single line of code
 
 # rFVSIEtools 0.1.1
 
